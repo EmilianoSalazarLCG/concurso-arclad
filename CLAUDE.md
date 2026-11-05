@@ -12,8 +12,13 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
   participantes no entran a la app.
 - Cada propuesta: nombre de la persona, área, ciudad, nombre propuesto, logo (PNG/JPG),
   significado (por qué ese nombre y ese logo).
-- Las propuestas llegan por correo; un agente con la API de Claude extraerá los datos del
-  correo (texto y adjuntos) y prellenará el formulario para que el admin solo revise y guarde.
+- La captura de propuestas es MANUAL (no hay agente de correo ni integración con la API de
+  Claude/Anthropic). Debe ser rápida para el admin:
+  - pegar el logo con Cmd+V (portapapeles) o arrastrar el archivo al formulario;
+  - autocompletar área y ciudad con los valores ya capturados;
+  - botón "Guardar y capturar otra" (limpia el formulario y conserva el foco);
+  - vista previa de la propuesta (incluido el logo) antes de guardar;
+  - aviso de posibles duplicados (mismo participante y/o nombre propuesto similar).
 - Embudo de votación por rondas:
   1. Todas las propuestas → Top 10–15 (votan los 11 gerentes con rúbrica 1–5 por criterio)
   2. Top 10–15 → Top 5 (mecánica por definir)
@@ -42,7 +47,7 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - IMPORTANTE: la versión anterior tuvo problemas de caché. Todas las páginas que muestran
   propuestas, votos o resultados deben renderizarse dinámicamente (sin caché estático):
   usar `export const dynamic = 'force-dynamic'` o fetch con `cache: 'no-store'` donde aplique.
-- Nunca exponer la service role key de Supabase ni la API key de Anthropic en el cliente
+- Nunca exponer la service role key de Supabase en el cliente
   (solo en código de servidor; nunca con prefijo `NEXT_PUBLIC_`).
 - Los cambios de base de datos se hacen con migraciones SQL versionadas en `/supabase/migrations`.
 
@@ -61,4 +66,4 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 
 ## Fases
 - Fase 1 (proyecto base): scaffolding, clientes Supabase, página de verificación, repo y deploy.
-- Siguientes fases: tablas, formularios de captura, agente de correo, votación, modo reunión.
+- Siguientes fases: tablas, formularios de captura manual, votación, modo reunión.
