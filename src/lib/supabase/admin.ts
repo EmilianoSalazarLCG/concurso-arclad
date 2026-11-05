@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { supabaseUrl } from "./env";
 
 /**
@@ -10,7 +11,7 @@ import { supabaseUrl } from "./env";
 export function createAdminClient() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY");
-  return createSupabaseClient(supabaseUrl(), key, {
+  return createSupabaseClient<Database>(supabaseUrl(), key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

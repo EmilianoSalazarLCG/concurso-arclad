@@ -64,6 +64,33 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - `src/lib/supabase/middleware.ts` + `src/proxy.ts` — refresco de sesión de Auth.
 - `src/lib/supabase/admin.ts` — cliente con service role (solo servidor, `server-only`).
 
+## Base de datos (Fase 2)
+- Proyecto Supabase: "Concurso Identidad ARclad" (ref `bguuokdhkclheplgxjnk`), vinculado con
+  `supabase link`. Con CLI 3.x los comandos remotos llevan `--remote`
+  (`supabase db push --remote`, `supabase gen types typescript --linked > src/types/database.ts`).
+- Tablas: `admins`, `propuestas`, `criterios`, `rondas`, `ronda_propuestas`, `calificaciones`;
+  vista `resultados_ronda`; funciones `es_admin()` y `buscar_posibles_duplicados()`.
+- Reglas en la base: una sola ronda `abierta` a la vez; las propuestas no se borran, se
+  descartan (`estado`); solo se califica una propuesta que pertenece a la ronda, en ronda
+  abierta y con criterio activo; puntaje 1–5; re-votar = upsert.
+- RLS en todas las tablas. `anon` no tiene ningún acceso. Usuarios autenticados solo si
+  están en `admins`. Los votos se escriben únicamente desde el servidor con service role.
+- Storage: bucket privado `logos` (PNG/JPG, 5 MB), archivos con nombre uuid, se muestran
+  con URLs firmadas generadas en el servidor (el nombre del proyecto es confidencial).
+- Tras cada migración: regenerar `src/types/database.ts`.
+
+## Acceso a datos (`src/lib/datos/`, solo servidor)
+- `auth.ts` — `obtenerAdminActual()`, `requerirAdmin()` (llamar al inicio de toda acción de admin).
+- `propuestas.ts` — alta/edición/descartar, duplicados, autocompletar área y ciudad.
+- `logos.ts` — validación (tamaño, tipo y firma real del archivo), subida, URLs firmadas.
+- `rondas.ts` — abrir/cerrar, propuestas por ronda, posición final; lecturas para votación
+  sin `notas_internas`.
+- `votos.ts` — `registrarCalificaciones()` con todas las validaciones (service role).
+- `resultados.ts` — ranking (`resultados_ronda`) y avance de votación por gerente.
+- Las funciones de admin usan la sesión del usuario (RLS aplica). Las de votación/modo
+  reunión usan service role y nunca devuelven `notas_internas`.
+
 ## Fases
 - Fase 1 (proyecto base): scaffolding, clientes Supabase, página de verificación, repo y deploy.
-- Siguientes fases: tablas, formularios de captura manual, votación, modo reunión.
+- Fase 2 (base de datos): migraciones, RLS, Storage, tipos y capa de datos. ✅
+- Siguientes fases: login de admins y captura manual, votación, modo reunión.
