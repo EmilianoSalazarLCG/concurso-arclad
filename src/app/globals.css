@@ -85,6 +85,34 @@
   --radius: 0.75rem;
 }
 
+/*
+ * Tema oscuro (solo modo reunión, para proyectores). Redefine los mismos tokens.
+ * El lienzo del logo se mantiene claro: muchos logos están pensados para fondo blanco.
+ */
+.tema-oscuro {
+  color-scheme: dark;
+  --background: oklch(0.17 0.012 165);
+  --foreground: oklch(0.96 0.006 130);
+  --card: oklch(0.215 0.014 165);
+  --card-foreground: oklch(0.96 0.006 130);
+  --popover: oklch(0.215 0.014 165);
+  --popover-foreground: oklch(0.96 0.006 130);
+  --encabezado: oklch(0.19 0.013 165);
+  --lienzo-logo: oklch(0.96 0.004 130);
+  --primary: oklch(0.74 0.13 155);
+  --primary-foreground: oklch(0.18 0.03 155);
+  --accent: oklch(0.32 0.05 155);
+  --accent-foreground: oklch(0.93 0.05 155);
+  --ring: oklch(0.7 0.12 155);
+  --secondary: oklch(0.27 0.012 165);
+  --secondary-foreground: oklch(0.94 0.006 130);
+  --muted: oklch(0.27 0.012 165);
+  --muted-foreground: oklch(0.74 0.012 150);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 18%);
+  --destructive: oklch(0.7 0.18 25);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

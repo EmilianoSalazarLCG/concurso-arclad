@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, PresentationIcon } from "lucide-react";
 import { Navegacion } from "@/components/admin/navegacion";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { exigirAdmin } from "@/lib/datos/auth";
 import { cerrarSesion } from "../acciones-sesion";
 
@@ -21,6 +21,14 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
             <Navegacion />
           </div>
           <div className="ml-auto flex items-center gap-3">
+            <Link
+              href="/admin/reunion"
+              className={buttonVariants({ variant: "secondary", size: "sm" })}
+              data-testid="modo-reunion"
+            >
+              <PresentationIcon data-icon="inline-start" />
+              Modo reunión
+            </Link>
             <span className="hidden text-sm text-muted-foreground md:inline" title={admin.correo}>
               {admin.nombre}
             </span>

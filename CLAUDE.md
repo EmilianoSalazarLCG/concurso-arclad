@@ -148,9 +148,23 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - `ajustar_folio()` (solo service role): deja el consecutivo en (folio más alto + 1) tras
   borrar propuestas de prueba.
 
+## Modo reunión (Fase 5)
+- `/admin/reunion` (fuera del layout del panel, pantalla completa; protegido con proxy +
+  `exigirAdmin()`). Datos en `src/lib/datos/reunion.ts`: SOLO folio, nombre, significado,
+  logo y autor; nunca notas internas, estado ni quién capturó.
+- Galería (todas las activas o una ronda), orden por folio o aleatorio (fijo por sesión en
+  sessionStorage), detalle con ←/→, A (autor, oculto por defecto), F (pantalla completa), Esc.
+- Controles que se ocultan a los 3 s; tema oscuro con la clase `.tema-oscuro` (mismos tokens;
+  el lienzo del logo sigue claro).
+- URLs firmadas (60 min) se renuevan solas a los 50 min y si una imagen falla.
+- Panel de votación: QR + link a `/votar` y avance en vivo (polling 4 s) sin calificaciones;
+  "votó" = calificó todas las propuestas activas de la ronda en todos los criterios activos.
+- `/votar` es un marcador público hasta la Fase 6.
+
 ## Fases
 - Fase 1 (proyecto base): scaffolding, clientes Supabase, página de verificación, repo y deploy.
 - Fase 2 (base de datos): migraciones, RLS, Storage, tipos y capa de datos. ✅
 - Fase 3 (login y captura): login de admins, panel, formulario de captura rápida. ✅
 - Fase 4 (gestión): lista, detalle, edición, descartar/restaurar, exportar, mantenimiento. ✅
-- Siguientes fases: votación por rondas, modo reunión.
+- Fase 5 (modo reunión): galería, detalle, presentación y panel de votación. ✅
+- Siguiente fase: página de votación de gerentes (/votar) y cierre de rondas.
