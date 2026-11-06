@@ -14,17 +14,21 @@ import {
   MaximizeIcon,
   MinimizeIcon,
   MoonIcon,
+  BarChart3Icon,
   ShuffleIcon,
   SunIcon,
+  TrophyIcon,
   VoteIcon,
 } from "lucide-react";
-import { cargarPropuestasReunion, consultarRondaAbierta } from "@/app/admin/reunion/acciones";
+import { cargarPropuestasReunion, consultarEstadoReunion } from "@/app/admin/reunion/acciones";
 import { Button } from "@/components/ui/button";
-import type { PropuestaReunion, RondaReunion } from "@/lib/datos/reunion";
+import type { EstadoReunion, PropuestaReunion, RondaReunion } from "@/lib/datos/reunion";
 import { cn } from "@/lib/utils";
 import { PanelVotacion } from "./panel-votacion";
+import { VistaResultados } from "./resultados-reunion";
+import { RevelarGanadores } from "./revelar-ganadores";
 
-type Vista = { tipo: "galeria" } | { tipo: "detalle"; id: string } | { tipo: "votacion" };
+type Vista = { tipo: "galeria" } | { tipo: "detalle"; id: string } | { tipo: "votacion" } | { tipo: "resultados" } | { tipo: "revelar" };
 type Orden = "folio" | "aleatorio";
 type Tema = "claro" | "oscuro";
 
@@ -82,12 +86,14 @@ function ordenAleatorioPara(fuente: string, ids: string[], nuevo = false): strin
 export function ModoReunion({
   propuestasIniciales,
   rondas,
+  estadoInicial,
   urlVotar,
   linkCorto,
   qrSvg,
 }: {
   propuestasIniciales: PropuestaReunion[];
   rondas: RondaReunion[];
+  estadoInicial: EstadoReunion;
   urlVotar: string;
   linkCorto: string;
   qrSvg: string;
@@ -104,7 +110,8 @@ export function ModoReunion({
   const [tema, setTema] = useState<Tema>("claro");
   const [pantallaCompleta, setPantallaCompleta] = useState(false);
   const [controles, setControles] = useState(true);
-  const [ronda, setRonda] = useState<RondaReunion | null>(rondas.find((r) => r.estado === "abierta") ?? null);
+  const [estadoR, setEstadoR] = useState<EstadoReunion>(estadoInicial);
+  const ronda = estadoR.abierta;
 
   // Preferencias guardadas (solo existen en el navegador).
   useEffect(() => {
@@ -154,11 +161,11 @@ export function ModoReunion({
     void recargar(fuente, { silencioso: true });
   }, [fuente, recargar]);
 
-  // ¿Hay ronda abierta? (se consulta cada 20 s)
+  // ¿Ronda abierta, rondas cerradas, ganadores confirmados? (se consulta cada 20 s)
   useEffect(() => {
     const t = setInterval(async () => {
-      const r = await consultarRondaAbierta();
-      if (r.ok) setRonda(r.data);
+      const r = await consultarEstadoReunion();
+      if (r.ok) setEstadoR(r.data);
     }, 20_000);
     return () => clearInterval(t);
   }, []);
@@ -396,6 +403,19 @@ export function ModoReunion({
                 <VoteIcon data-icon="inline-start" />
                 {ronda ? "Votación" : "No hay votación abierta"}
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => setVista({ tipo: "resultados" })}
+                disabled={estadoR.cerradas.length === 0}
+                data-testid="boton-resultados"
+              >
+                <BarChart3Icon data-icon="inline-start" /> Resultados
+              </Button>
+              {estadoR.ganadoresListos && (
+                <Button variant="outline" onClick={() => setVista({ tipo: "revelar" })} data-testid="boton-revelar">
+                  <TrophyIcon data-icon="inline-start" /> Revelar ganadores
+                </Button>
+              )}
               {botonesGlobales}
               <Link href="/admin" className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm text-muted-foreground hover:text-foreground">
                 <LogOutIcon className="size-4" /> Salir
@@ -526,6 +546,8 @@ export function ModoReunion({
       )}
 
       {vista.tipo === "votacion" && <PanelVotacion urlVotar={urlVotar} linkCorto={linkCorto} qrSvg={qrSvg} />}
+      {vista.tipo === "resultados" && <VistaResultados cerradas={estadoR.cerradas} />}
+      {vista.tipo === "revelar" && <RevelarGanadores />}
     </div>
   );
 }

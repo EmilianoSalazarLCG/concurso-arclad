@@ -16,7 +16,7 @@ import { registrarCalificaciones } from "./votos";
 export type RondaPublica = { id: string; numero: number; nombre: string };
 
 export type EstadoVotacion =
-  | { tipo: "abierta"; ronda: RondaPublica }
+  | { tipo: "abierta"; ronda: RondaPublica; totalRondas: number }
   | { tipo: "sin-abrir" }
   | { tipo: "cerrada"; ronda: RondaPublica; hayMasRondas: boolean };
 
@@ -24,7 +24,9 @@ export async function estadoVotacion(): Promise<EstadoVotacion> {
   const { data, error } = await createAdminClient().from("rondas").select("id, numero, nombre, estado").order("numero");
   if (error) throw new Error("No se pudo consultar la votación.");
   const abierta = data.find((r) => r.estado === "abierta");
-  if (abierta) return { tipo: "abierta", ronda: { id: abierta.id, numero: abierta.numero, nombre: abierta.nombre } };
+  if (abierta) {
+    return { tipo: "abierta", ronda: { id: abierta.id, numero: abierta.numero, nombre: abierta.nombre }, totalRondas: data.length };
+  }
   const cerradas = data.filter((r) => r.estado === "cerrada");
   if (cerradas.length === 0) return { tipo: "sin-abrir" };
   const ultima = cerradas[cerradas.length - 1];
@@ -48,6 +50,7 @@ export type CriterioVotacion = { id: string; nombre: string; descripcion: string
 
 export type DatosVotacion = {
   ronda: RondaPublica;
+  totalRondas: number;
   criterios: CriterioVotacion[];
   propuestas: PropuestaVotacion[];
   /** Calificaciones propias guardadas: { propuestaId: { criterioId: puntaje } }. */
@@ -109,6 +112,7 @@ export async function datosVotacion(votanteId: string): Promise<Resultado<DatosV
   const urls = await urlsFirmadasLogos(propuestas.map((p) => p.logo_path));
   return ok({
     ronda,
+    totalRondas: estado.totalRondas,
     criterios: criterios.map((c) => ({ id: c.id, nombre: c.nombre, descripcion: c.descripcion })),
     propuestas: ordenEstable(propuestas, `${votante.id}:${ronda.id}`).map((p) => ({
       id: p.id,

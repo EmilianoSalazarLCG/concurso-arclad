@@ -34,6 +34,14 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - Modo reunión: "votó" = envió su voto; con avance sin enviar = "(votando…)".
 - Resultados (`resultados_ronda`) usan solo `calificaciones_enviadas`.
 
+## Decisiones del concurso (Fase 7)
+- Las 3 rondas se deciden por votación de los 11 gerentes con la rúbrica 1–5, con el mismo
+  flujo: Ronda 1 (todas las activas → Top 15), Ronda 2 (Top 15 → Top 5), Ronda 3 (Top 5 →
+  Top 3 ganadores). No hay selección manual del cliente.
+- Los gerentes NUNCA ven resultados en /votar. Los resultados solo se ven en el portal de admin
+  y en el modo reunión (que abre un admin).
+- Cada ronda empieza en cero para cada gerente (las calificaciones son por ronda).
+
 ## Contexto del proyecto
 - Concurso donde colaboradores proponen nombre + logo para un proyecto.
 - Los ADMINISTRADORES (equipo de People & Culture) capturan las propuestas; los
@@ -199,6 +207,23 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
   en `pendiente`; no se abre una ronda sin propuestas; una sola abierta.
 - "Conexión OK" vive ahora en `/admin/mantenimiento` (Estado del sistema).
 
+## Resultados, avance y ganadores (Fase 7)
+- `/admin/rondas/[id]/resultados`: ranking (votos enviados), línea de corte en top_n, aviso de
+  empate en el corte (`src/lib/corte.ts`), detalle por gerente (diálogo), en vivo si la ronda
+  está abierta (router.refresh cada 10 s), Excel con hojas «Ranking» y «Detalle por gerente».
+- `/admin/rondas/[id]/avanzar`: preselecciona el Top N (incluye empatadas), el admin ajusta y
+  confirma → `pasar_a_siguiente_ronda()` (guarda posicion_final = posición del ranking, agrega a
+  la siguiente ronda, registra en `avances_ronda`). `deshacer_avance()` solo si la siguiente
+  sigue pendiente y sin votos. Una ronda que ya avanzó no se puede reabrir.
+- `/admin/ganadores`: el admin confirma 1º/2º/3º (`confirmar_ganadores()`, resuelve empates;
+  posicion_final 1–3 en la ronda final + `ganadores_confirmados`). Paquete para la agencia: ZIP
+  armado en el navegador con logos originales ("1 - Nombre.png") + Excel generado en servidor.
+  Reabrir la ronda final anula la confirmación.
+- Modo reunión: vista «Resultados» (rondas cerradas; sin calificaciones por gerente ni autor;
+  promedios ocultos por defecto) y «Revelar ganadores» (3º → 2º → 1º → podio, con autor).
+- Pruebas E2E (fuera del repo): la limpieza SOLO corre si la prueba pasó sus precondiciones;
+  nunca borrar datos de la base si la prueba se canceló.
+
 ## Fases
 - Fase 1 (proyecto base): scaffolding, clientes Supabase, página de verificación, repo y deploy.
 - Fase 2 (base de datos): migraciones, RLS, Storage, tipos y capa de datos. ✅
@@ -206,4 +231,4 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - Fase 4 (gestión): lista, detalle, edición, descartar/restaurar, exportar, mantenimiento. ✅
 - Fase 5 (modo reunión): galería, detalle, presentación y panel de votación. ✅
 - Fase 6 (votación): /votar para gerentes, envío explícito, gestión de rondas. ✅
-- Siguiente fase: resultados y paso de rondas (Top N a la siguiente).
+- Fase 7 (resultados y cierre): ranking, avance entre rondas, ganadores, revelación. ✅

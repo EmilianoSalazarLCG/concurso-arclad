@@ -3,11 +3,15 @@
 import { NoAutorizadoError } from "@/lib/datos/auth";
 import {
   avanceVotacionReunion,
+  estadoReunion,
+  ganadoresReunion,
   propuestasReunion,
-  rondaAbierta,
+  resultadosReunion,
   type AvanceReunion,
+  type EstadoReunion,
+  type GanadorReunion,
   type PropuestaReunion,
-  type RondaReunion,
+  type ResultadosReunion,
 } from "@/lib/datos/reunion";
 import { falla, ok, type Resultado } from "@/lib/datos/tipos";
 
@@ -26,8 +30,16 @@ export async function cargarPropuestasReunion(fuente: string): Promise<Resultado
   return protegido(() => propuestasReunion(String(fuente ?? "activas")));
 }
 
-export async function consultarRondaAbierta(): Promise<Resultado<RondaReunion | null>> {
-  return protegido(() => rondaAbierta());
+export async function consultarEstadoReunion(): Promise<Resultado<EstadoReunion>> {
+  return protegido(() => estadoReunion());
+}
+
+export async function cargarResultadosReunion(rondaId: string): Promise<Resultado<ResultadosReunion | null>> {
+  return protegido(() => resultadosReunion(String(rondaId ?? "")));
+}
+
+export async function cargarGanadoresReunion(): Promise<Resultado<GanadorReunion[] | null>> {
+  return protegido(() => ganadoresReunion());
 }
 
 export async function consultarAvanceVotacion(): Promise<Resultado<AvanceReunion | null>> {

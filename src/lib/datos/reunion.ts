@@ -1,9 +1,11 @@
 import "server-only";
 import { obtenerVotantes } from "@/config/votantes";
+import { analizarCorte } from "@/lib/corte";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { requerirAdmin } from "./auth";
 import { urlsFirmadasLogos } from "./logos";
+import { resultadosDeRonda, rondaFinal } from "./resultados";
 import { propuestasParaVotar } from "./rondas";
 
 /**
@@ -104,4 +106,96 @@ export async function avanceVotacionReunion(): Promise<AvanceReunion | null> {
     totalPropuestas: propuestas.length,
     votantes,
   };
+}
+
+// ---------------------------------------------------------------- resultados y ganadores (Fase 7)
+
+export type EstadoReunion = {
+  abierta: RondaReunion | null;
+  cerradas: RondaReunion[];
+  ganadoresListos: boolean;
+};
+
+export async function estadoReunion(): Promise<EstadoReunion> {
+  await requerirAdmin();
+  const rondas = await rondasReunion();
+  const supabase = await createClient();
+  const final = rondas[rondas.length - 1];
+  const { count } = final
+    ? await supabase.from("ganadores_confirmados").select("*", { count: "exact", head: true }).eq("ronda_id", final.id)
+    : { count: 0 };
+  return {
+    abierta: rondas.find((r) => r.estado === "abierta") ?? null,
+    cerradas: rondas.filter((r) => r.estado === "cerrada"),
+    ganadoresListos: final?.estado === "cerrada" && (count ?? 0) > 0,
+  };
+}
+
+export type ResultadosReunion = {
+  ronda: { numero: number; nombre: string; top_n: number };
+  esFinal: boolean;
+  siguiente: number | null;
+  filas: { propuesta_id: string; posicion: number; folio: number; nombre: string; logoUrl: string | null; promedio: number | null; pasa: boolean }[];
+};
+
+/** Ranking para proyectar: SIN calificaciones por gerente ni autor. Solo rondas cerradas. */
+export async function resultadosReunion(rondaId: string): Promise<ResultadosReunion | null> {
+  const d = await resultadosDeRonda(rondaId);
+  if (!d || d.ronda.estado !== "cerrada") return null;
+  const esFinal = d.ronda.numero === d.totalRondas;
+  const pasan = new Set(
+    esFinal && d.ganadoresConfirmados
+      ? d.filas.filter((f) => f.posicion_final).map((f) => f.propuesta_id)
+      : d.avance
+        ? d.avanzadas
+        : analizarCorte(d.filas, d.ronda.top_n).dentro,
+  );
+  return {
+    ronda: { numero: d.ronda.numero, nombre: d.ronda.nombre, top_n: d.ronda.top_n },
+    esFinal,
+    siguiente: d.siguiente?.numero ?? null,
+    filas: d.filas.map((f) => ({
+      propuesta_id: f.propuesta_id,
+      posicion: f.posicion,
+      folio: f.folio,
+      nombre: f.nombre_propuesto,
+      logoUrl: f.logoUrl,
+      promedio: f.promedio_general,
+      pasa: pasan.has(f.propuesta_id),
+    })),
+  };
+}
+
+export type GanadorReunion = {
+  lugar: number;
+  folio: number;
+  nombre: string;
+  significado: string;
+  participante: string;
+  area: string;
+  ciudad: string;
+  logoUrl: string | null;
+  promedio: number | null;
+};
+
+/** Top 3 confirmado (con autor, que se muestra al revelar). Null si aún no se confirma. */
+export async function ganadoresReunion(): Promise<GanadorReunion[] | null> {
+  const final = await rondaFinal();
+  if (!final) return null;
+  const d = await resultadosDeRonda(final.id);
+  if (!d || d.ronda.estado !== "cerrada" || !d.ganadoresConfirmados) return null;
+  return d.filas
+    .filter((f) => f.posicion_final)
+    .sort((a, b) => a.posicion_final! - b.posicion_final!)
+    .map((f) => ({
+      lugar: f.posicion_final!,
+      folio: f.folio,
+      nombre: f.nombre_propuesto,
+      significado: f.significado,
+      participante: f.participante,
+      area: f.area,
+      ciudad: f.ciudad,
+      logoUrl: f.logoUrl,
+      promedio: f.promedio_general,
+    }));
 }

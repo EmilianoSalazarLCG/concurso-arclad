@@ -376,8 +376,8 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
     <header className="sticky top-0 z-30 border-b bg-encabezado/95 backdrop-blur">
       <div className="mx-auto max-w-6xl space-y-2 px-4 py-2.5">
         <div className="flex items-center justify-between gap-3 text-sm">
-          <p className="truncate text-muted-foreground">
-            Ronda {datos.ronda.numero} · {datos.ronda.nombre}
+          <p className="truncate text-muted-foreground" data-testid="ronda-actual">
+            Ronda {datos.ronda.numero} de {datos.totalRondas} · {propuestas.length} propuestas
           </p>
           <IndicadorGuardado estado={guardado} />
         </div>

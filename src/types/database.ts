@@ -60,6 +60,45 @@ export type Database = {
         }
         Relationships: []
       }
+      avances_ronda: {
+        Row: {
+          propuestas: number
+          realizado_at: string
+          realizado_por: string | null
+          ronda_destino_id: string
+          ronda_origen_id: string
+        }
+        Insert: {
+          propuestas: number
+          realizado_at?: string
+          realizado_por?: string | null
+          ronda_destino_id: string
+          ronda_origen_id: string
+        }
+        Update: {
+          propuestas?: number
+          realizado_at?: string
+          realizado_por?: string | null
+          ronda_destino_id?: string
+          ronda_origen_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avances_ronda_ronda_destino_id_fkey"
+            columns: ["ronda_destino_id"]
+            isOneToOne: false
+            referencedRelation: "rondas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avances_ronda_ronda_origen_id_fkey"
+            columns: ["ronda_origen_id"]
+            isOneToOne: true
+            referencedRelation: "rondas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calificaciones: {
         Row: {
           created_at: string
@@ -184,6 +223,32 @@ export type Database = {
           orden?: number
         }
         Relationships: []
+      }
+      ganadores_confirmados: {
+        Row: {
+          confirmado_at: string
+          confirmado_por: string | null
+          ronda_id: string
+        }
+        Insert: {
+          confirmado_at?: string
+          confirmado_por?: string | null
+          ronda_id: string
+        }
+        Update: {
+          confirmado_at?: string
+          confirmado_por?: string | null
+          ronda_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ganadores_confirmados_ronda_id_fkey"
+            columns: ["ronda_id"]
+            isOneToOne: true
+            referencedRelation: "rondas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       propuestas: {
         Row: {
@@ -432,11 +497,20 @@ export type Database = {
         }[]
       }
       calificaciones_esperadas: { Args: { p_ronda: string }; Returns: number }
+      confirmar_ganadores: {
+        Args: { p_ids: string[]; p_ronda: string }
+        Returns: undefined
+      }
+      deshacer_avance: { Args: { p_origen: string }; Returns: undefined }
       enviar_voto: {
         Args: { p_ronda: string; p_votante: string }
         Returns: string
       }
       es_admin: { Args: never; Returns: boolean }
+      pasar_a_siguiente_ronda: {
+        Args: { p_origen: string; p_propuestas: string[] }
+        Returns: number
+      }
       reiniciar_folio_si_vacio: { Args: never; Returns: boolean }
     }
     Enums: {

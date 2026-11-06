@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRightIcon } from "lucide-react";
+import { BarChart3Icon, ChevronRightIcon, TrophyIcon } from "lucide-react";
 import { AccionesRonda } from "@/components/admin/acciones-ronda";
 import { CopiarLink } from "@/components/admin/copiar-link";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,12 @@ export default async function RondasPage() {
             <span className="font-mono text-foreground">{link.corto}</span>
           </p>
         </div>
-        <CopiarLink url={link.url} />
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/ganadores" className={buttonVariants({ variant: "outline", size: "sm" })} data-testid="ir-ganadores">
+            <TrophyIcon data-icon="inline-start" /> Ganadores
+          </Link>
+          <CopiarLink url={link.url} />
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -63,6 +68,15 @@ export default async function RondasPage() {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-start gap-2">
+                  {estado !== "pendiente" && (
+                    <Link
+                      href={`/admin/rondas/${r.id}/resultados`}
+                      className={buttonVariants({ variant: "outline", size: "sm" })}
+                      data-testid={`resultados-${r.numero}`}
+                    >
+                      <BarChart3Icon data-icon="inline-start" /> Resultados
+                    </Link>
+                  )}
                   <Link href={`/admin/rondas/${r.id}`} className={buttonVariants({ variant: "outline", size: "sm" })} data-testid={`gestionar-${r.numero}`}>
                     Propuestas <ChevronRightIcon data-icon="inline-end" />
                   </Link>
