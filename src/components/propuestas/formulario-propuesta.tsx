@@ -245,9 +245,10 @@ export function FormularioPropuesta({
           void guardar(e.shiftKey && !editando ? "otra" : "lista");
         }
       }}
-      className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]"
+      className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_23rem] xl:gap-10"
     >
-      <div className="space-y-6 rounded-xl border bg-card p-5 shadow-sm sm:p-7">
+      <div className="space-y-7 rounded-2xl border bg-card p-5 shadow-sm sm:p-8">
+        <Seccion numero={1} titulo="Participante" descripcion="Quién propone. Una persona puede enviar varias propuestas.">
         <div className="grid gap-5 sm:grid-cols-2">
           <Campo id="participante_nombre" etiqueta="Nombre de la persona" error={errores.participante_nombre} className="sm:col-span-2">
             <Input
@@ -295,6 +296,10 @@ export function FormularioPropuesta({
             />
           </Campo>
 
+        </div>
+        </Seccion>
+        <Seccion numero={2} titulo="Propuesta" descripcion="Nombre, logo y significado, tal como se van a votar.">
+        <div className="grid gap-5">
           <Campo id="nombre_propuesto" etiqueta="Nombre propuesto para el proyecto" error={errores.nombre_propuesto} className="sm:col-span-2">
             <Input
               id="nombre_propuesto"
@@ -345,7 +350,9 @@ export function FormularioPropuesta({
             aria-describedby={errorDe("significado")}
           />
         </Campo>
+        </Seccion>
 
+        <Seccion numero={3} titulo="Interno" descripcion="Notas para el equipo de People & Culture.">
         <Campo
           id="notas_internas"
           etiqueta="Notas internas"
@@ -366,14 +373,15 @@ export function FormularioPropuesta({
             aria-describedby={errorDe("notas_internas")}
           />
         </Campo>
+        </Seccion>
 
         {(errorGeneral || Object.keys(errores).length > 0) && (
-          <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="error-general">
+          <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive-fondo px-3.5 py-2.5 text-sm font-medium text-destructive" data-testid="error-general">
             {errorGeneral ?? "Revisa los campos marcados."}
           </p>
         )}
 
-        <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="-mx-5 -mb-5 flex flex-col-reverse gap-3 rounded-b-2xl border-t bg-muted/50 px-5 py-4 sm:-mx-8 sm:-mb-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <Link
             href={inicial ? `/admin/propuestas/${inicial.id}` : "/admin"}
             className="text-sm text-muted-foreground hover:text-foreground"
@@ -404,7 +412,9 @@ export function FormularioPropuesta({
       </div>
 
       <aside className="lg:sticky lg:top-20 lg:self-start">
-        <p className="mb-3 text-xs font-medium tracking-wider text-muted-foreground uppercase">Vista previa en la galería</p>
+        <p className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+          <span className="size-1.5 rounded-full bg-primary" /> Vista previa en la galería
+        </p>
         <TarjetaPropuesta
           vistaPrevia
           datos={{
@@ -419,6 +429,31 @@ export function FormularioPropuesta({
         />
       </aside>
     </form>
+  );
+}
+
+function Seccion({
+  numero,
+  titulo,
+  descripcion,
+  children,
+}: {
+  numero: number;
+  titulo: string;
+  descripcion: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="grid gap-5 border-t border-border pt-7 first:border-t-0 first:pt-0 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-8">
+      <div>
+        <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-primary uppercase">
+          <span className="flex size-6 items-center justify-center rounded-full bg-accent text-[0.7rem] text-accent-foreground cifras">{numero}</span>
+          {titulo}
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{descripcion}</p>
+      </div>
+      <div className="min-w-0 space-y-5">{children}</div>
+    </section>
   );
 }
 
@@ -474,7 +509,7 @@ function AvisoDuplicados({ duplicados }: { duplicados: PosibleDuplicado[] }) {
       id="aviso-duplicados"
       role="status"
       data-testid="aviso-duplicados"
-      className="mt-2 rounded-lg border border-advertencia/40 bg-advertencia-fondo px-3 py-2.5 text-sm text-advertencia-foreground"
+      className="mt-2.5 rounded-lg border border-advertencia/30 bg-advertencia-fondo px-3.5 py-3 text-sm text-advertencia-foreground aparecer"
     >
       <p className="flex items-center gap-1.5 font-medium">
         <AlertTriangleIcon className="size-4 shrink-0" />

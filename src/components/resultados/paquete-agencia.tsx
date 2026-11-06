@@ -16,7 +16,7 @@ export function PaqueteAgencia() {
       const r = await paqueteAgencia();
       if (!r.ok) throw new Error(r.error);
       const archivos: Record<string, Uint8Array> = {
-        "ganadores.xlsx": Uint8Array.from(atob(r.data.excel), (c) => c.charCodeAt(0)),
+        "Concurso Identidad - Ganadores.xlsx": Uint8Array.from(atob(r.data.excel), (c) => c.charCodeAt(0)),
       };
       for (const l of r.data.logos) {
         setEstado(`Descargando ${l.nombre}…`);
@@ -28,7 +28,7 @@ export function PaqueteAgencia() {
       const zip = zipSync(archivos, { level: 0 });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(new Blob([zip as BlobPart], { type: "application/zip" }));
-      a.download = "paquete-agencia-concurso-identidad.zip";
+      a.download = "Concurso Identidad - Paquete agencia.zip";
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
       toast.success("Paquete listo");
@@ -40,7 +40,7 @@ export function PaqueteAgencia() {
   }
 
   return (
-    <Button onClick={descargar} disabled={estado !== null} data-testid="paquete-agencia">
+    <Button variant="oro" size="lg" onClick={descargar} disabled={estado !== null} data-testid="paquete-agencia">
       {estado ? <Loader2Icon data-icon="inline-start" className="animate-spin" /> : <PackageIcon data-icon="inline-start" />}
       {estado ?? "Paquete para la agencia"}
     </Button>

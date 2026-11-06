@@ -1,15 +1,27 @@
 @AGENTS.md
 
-# Concurso identidad
+# Concurso Identidad
 
 Aplicación web para gestionar un concurso interno de naming y logo para un proyecto de un cliente (ver regla de nombre abajo).
 - Nombre del paquete: `concurso-arclad`
-- Nombre visible: **Concurso identidad**
-- REGLA: nada de lo que se ve en la aplicación (textos, títulos de pestaña, encabezados,
-  nombres de archivos exportados, metadatos) puede mencionar "ARclad" ni "London Consulting".
-  El nombre de la carpeta, del paquete, del repo y del proyecto Supabase son internos.
-  El dominio `concurso-arclad.vercel.app` se mantiene (decisión del usuario, 2026-11-06),
-  aunque aparezca en el QR/link de votación; no volver a proponer cambiarlo.
+- Nombre visible: **Concurso Identidad** (con mayúscula en ambas palabras).
+
+## Regla permanente de nombre y marca
+- En NINGÚN lugar visible puede aparecer "ARclad", "London", "London Consulting" ni "LCG":
+  títulos, pestaña del navegador, metadatos, login, encabezados, pies de página, textos,
+  mensajes, modo reunión, nombres de archivos exportados (Excel, ZIP), hojas de Excel ni
+  textos alternativos de imágenes.
+- Excepciones que se mantienen: el dominio `concurso-arclad.vercel.app` (QR, link de votación,
+  "Copiar link de votación"; decisión del usuario, no proponer cambiarlo) y los correos de los
+  admins. Los nombres internos (carpeta, paquete, repo, proyecto Supabase, variables) pueden
+  quedarse igual.
+- Archivos exportados: "Concurso Identidad - Propuestas.xlsx", "Concurso Identidad - Logos.zip",
+  "Concurso Identidad - Resultados Ronda N.xlsx", "Concurso Identidad - Paquete agencia.zip"
+  (dentro: "Concurso Identidad - Ganadores.xlsx"). Content-Disposition con `adjunto()`
+  (`src/lib/descarga.ts`).
+- Logotipo propio: `src/components/marca/logotipo.tsx` (`<Logotipo>` wordmark en Fraunces con
+  «Identidad» en itálica esmeralda + `<Simbolo>`: «i» geométrica con punto dorado). Favicon:
+  `src/app/icon.svg` (mismo símbolo).
 
 ## Dos partes separadas
 1. **Portal de admin (`/admin`)**: con login, solo para People & Culture. Captura, historial,
@@ -70,15 +82,34 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - El modo reunión lo abre un admin desde su sesión y lo proyecta en pantalla (es una ruta
   dentro de `/admin`, protegida igual que el resto del panel).
 
-## Estilo visual
-- Limpio y profesional: títulos con serif (Source Serif 4, `font-heading`), texto con
-  sans-serif (Inter), fondo claro, acento verde, tarjetas con bordes suaves.
-- Todos los colores, radios y fuentes son variables en `:root` de `src/app/globals.css`
-  (tokens de Tailwind: `primary`, `accent`, `advertencia`, `lienzo-logo`, etc.). Para
-  adaptar a la marca del cliente se cambian ahí; los componentes no usan colores fijos.
-- Solo tema claro. Responsive (la captura se hace principalmente en computadora).
-- Tarjeta de propuesta reutilizable: `src/components/propuestas/tarjeta-propuesta.tsx`
-  (vista previa, galería y modo reunión).
+## Sistema de diseño
+- Guía viva: `/admin/estilo` (logotipo, paleta, tipografía, botones, campos, etiquetas, estados).
+- TODO sale de tokens en `src/app/globals.css` (ningún hex suelto en componentes; la única
+  excepción documentada son los colores de los Excel en `src/lib/excel-marca.ts` y el favicon).
+- Paleta: Tinta #0F1B2D (texto, fondo del modo reunión) · Esmeralda #0E7C66 (primario; hover
+  #0B6553; tinte #E3F2EE) · Marfil #F7F5F0 (fondo) · Superficie #FFFFFF · Arena #E6E1D8 (bordes)
+  · Pizarra #5B6472 (texto secundario) · Oro #C8A24A (ganadores; tinte #F6EFD9) · plata/bronce
+  para el podio · estados éxito #15803D, advertencia #B45309, error #B42318.
+  Tokens Tailwind: primary, primary-hover, accent, tinta, oro, oro-suave, oro-foreground, plata,
+  bronce, exito(-fondo), advertencia(-fondo/-foreground), destructive(-fondo), lienzo-logo…
+- Tema oscuro: clase `.tema-oscuro` (redefine los mismos tokens: fondo tinta, superficies
+  #16243A, texto marfil). Se usa en el modo reunión (por defecto), el panel del login y la
+  bienvenida de /votar. El lienzo del logo se mantiene claro en ambos temas.
+- Tipografía (next/font): títulos Fraunces 500–700 (`font-heading`, tracking negativo en
+  grandes); texto/botones/formularios Manrope; números con la utilidad `cifras` (tabulares).
+  Escala: 12/14/16/20/24/32/44/60 (text-xs … text-6xl; text-3xl=32, text-4xl=44).
+- Forma: radios 10 px controles (rounded-lg), 16 px tarjetas (rounded-xl), 24 px paneles
+  (rounded-2xl). Sombras suaves en capas: shadow-xs/sm/md/lg. Bordes finos en arena.
+- Movimiento: transiciones 150–250 ms; utilidad `aparecer` con `--i` para entradas escalonadas;
+  `animate-revelar` (modo reunión / ganadores); todo se desactiva con prefers-reduced-motion.
+- Piezas comunes: `EncabezadoPagina` y `Metrica` (`src/components/admin/encabezado-pagina.tsx`),
+  `Embudo` (Todas → Top 15 → Top 5 → Top 3), `EstadoVacio` (ilustración SVG propia),
+  `PatronGeometrico`, `Skeleton` (esqueletos en lugar de spinners), Badge con variantes tipo pill
+  (exito, destructive, advertencia, oro, solido, outline), Button con variantes tinta y oro.
+- Responsive: sin scroll horizontal a 360, 820 y 1440 px (encabezado del panel: textos de
+  acciones solo en 2xl; navegación en segunda fila debajo de lg).
+- Conservar los `data-testid` y textos que usan las pruebas E2E al cambiar estilos.
+- Tarjeta de propuesta reutilizable: `src/components/propuestas/tarjeta-propuesta.tsx`.
 
 ## Votantes (gerentes)
 - Son 11 y por ahora van fijos en el código, en un solo archivo de configuración
@@ -232,3 +263,4 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - Fase 5 (modo reunión): galería, detalle, presentación y panel de votación. ✅
 - Fase 6 (votación): /votar para gerentes, envío explícito, gestión de rondas. ✅
 - Fase 7 (resultados y cierre): ranking, avance entre rondas, ganadores, revelación. ✅
+- Fase de diseño: rediseño visual completo, marca «Concurso Identidad», guía /admin/estilo. ✅

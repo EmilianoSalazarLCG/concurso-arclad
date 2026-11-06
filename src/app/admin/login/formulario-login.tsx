@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { AlertCircleIcon, ArrowRightIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +13,7 @@ export function FormularioLogin({ avisoInicial, siguiente }: { avisoInicial?: st
   });
 
   return (
-    <form action={accion} className="space-y-5 rounded-xl border bg-card p-6 shadow-sm" noValidate>
+    <form action={accion} className="space-y-5" noValidate>
       <input type="hidden" name="siguiente" value={siguiente ?? ""} />
 
       <div className="space-y-2">
@@ -25,6 +26,7 @@ export function FormularioLogin({ avisoInicial, siguiente }: { avisoInicial?: st
           defaultValue={estado.correo}
           required
           autoFocus
+          className="h-11"
           aria-invalid={Boolean(estado.error) || undefined}
         />
       </div>
@@ -37,18 +39,28 @@ export function FormularioLogin({ avisoInicial, siguiente }: { avisoInicial?: st
           type="password"
           autoComplete="current-password"
           required
+          className="h-11"
           aria-invalid={Boolean(estado.error) || undefined}
         />
       </div>
 
       {estado.error && (
-        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p role="alert" className="flex gap-2 rounded-lg border border-destructive/20 bg-destructive-fondo px-3 py-2.5 text-sm text-destructive">
+          <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
           {estado.error}
         </p>
       )}
 
-      <Button type="submit" className="h-10 w-full" disabled={enviando}>
-        {enviando ? "Entrando…" : "Iniciar sesión"}
+      <Button type="submit" size="lg" className="w-full" disabled={enviando}>
+        {enviando ? (
+          <>
+            <Loader2Icon data-icon="inline-start" className="animate-spin" /> Entrando…
+          </>
+        ) : (
+          <>
+            Iniciar sesión <ArrowRightIcon data-icon="inline-end" />
+          </>
+        )}
       </Button>
     </form>
   );

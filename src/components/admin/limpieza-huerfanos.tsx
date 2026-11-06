@@ -41,7 +41,7 @@ export function LimpiezaHuerfanos({ cantidad, bytes, recientes }: { cantidad: nu
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg bg-muted/60 px-4 py-3 text-sm" data-testid="resumen-huerfanos">
+      <div className="rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm" data-testid="resumen-huerfanos">
         {cantidad === 0 ? (
           <p>No hay logos huérfanos con más de 24 horas.</p>
         ) : (

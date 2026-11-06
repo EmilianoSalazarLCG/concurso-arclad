@@ -9,9 +9,11 @@ import {
   ChevronRightIcon,
   CircleIcon,
   CloudOffIcon,
+  GaugeIcon,
   LayoutGridIcon,
   Loader2Icon,
   LockIcon,
+  Maximize2Icon,
   SendIcon,
   XIcon,
 } from "lucide-react";
@@ -21,7 +23,10 @@ import {
   enviarVoto,
   guardarCalificacion,
 } from "@/app/votar/acciones";
+import { Logotipo, Simbolo } from "@/components/marca/logotipo";
+import { PatronGeometrico } from "@/components/marca/patron";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ESCALA } from "@/config/votacion";
 import type { DatosVotacion, EstadoVotacion } from "@/lib/datos/votacion";
 import { cn } from "@/lib/utils";
@@ -326,8 +331,17 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
   if (fase === "inicio" || fase === "cargando") {
     return (
       <Pantalla>
-        <div className="flex flex-1 items-center justify-center gap-2 text-muted-foreground" data-testid="cargando">
-          <Loader2Icon className="size-5 animate-spin" /> Cargando…
+        <div className="mx-auto w-full max-w-6xl flex-1 space-y-5 px-4 py-6" data-testid="cargando" aria-busy="true" aria-label="Cargando">
+          <Skeleton className="h-3 w-40" />
+          <Skeleton className="h-2.5 w-full rounded-full" />
+          <div className="grid gap-6 pt-4 lg:grid-cols-2">
+            <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
+            <div className="space-y-4">
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-36 w-full rounded-2xl" />
+              ))}
+            </div>
+          </div>
         </div>
       </Pantalla>
     );
@@ -338,7 +352,7 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
   if (fase === "error") {
     return (
       <Pantalla>
-        <Mensaje icono={<CloudOffIcon className="size-10 text-destructive" />} titulo="No se pudo cargar la votación">
+        <Mensaje icono={<IconoCirculo tono="error"><CloudOffIcon className="size-9" /></IconoCirculo>} titulo="No se pudo cargar la votación">
           <p>{error}</p>
           <Button className="mt-4 h-11 text-primary-foreground" onClick={() => votante && cargar(votante)}>
             Intentar de nuevo
@@ -351,41 +365,67 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
   if (fase === "elegir" || !votante || !datos) {
     return (
       <Pantalla>
-        <div className="mx-auto w-full max-w-lg px-4 py-8 sm:py-14">
-          <Marca />
-          <h1 className="mt-6 text-3xl font-semibold">¿Quién eres?</h1>
-          <p className="mt-2 text-muted-foreground">Elige tu nombre para calificar las propuestas.</p>
-          <ul className="mt-6 grid gap-2 sm:grid-cols-2" data-testid="lista-votantes">
-            {votantes.map((v) => (
-              <li key={v.id}>
-                <button
-                  onClick={() => elegir(v)}
-                  className="flex min-h-14 w-full items-center rounded-xl border bg-card px-4 text-left text-lg font-medium shadow-xs transition hover:border-primary/50 hover:bg-accent/40 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                >
-                  {v.nombre}
-                </button>
-              </li>
-            ))}
-          </ul>
+        <section className="tema-oscuro relative isolate overflow-hidden bg-background px-4 pt-8 pb-28 text-foreground sm:pt-12 sm:pb-36">
+          <PatronGeometrico className="-z-10 text-foreground/[0.08]" />
+          <div className="absolute -top-24 -right-24 -z-10 size-80 rounded-full bg-primary/20 blur-3xl" aria-hidden />
+          <div className="mx-auto max-w-3xl aparecer">
+            <Logotipo tamano="sm" />
+            <p className="mt-10 text-xs font-semibold tracking-[0.22em] text-oro uppercase">Votación de gerentes</p>
+            <h1 className="mt-3 text-4xl leading-[1.05] font-semibold sm:text-6xl">
+              Califica las <em className="font-medium text-primary">propuestas</em>
+            </h1>
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+              Del 1 al 5 en cuatro criterios. No verás quién propuso cada nombre. Tu avance se guarda solo y puedes corregir hasta que cierre la votación.
+            </p>
+          </div>
+        </section>
+        <div className="relative z-10 mx-auto -mt-20 w-full max-w-3xl px-4 pb-16 sm:-mt-24">
+          <div className="rounded-2xl border bg-card p-5 shadow-lg sm:p-7">
+            <h2 className="text-2xl font-semibold">¿Quién eres?</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Elige tu nombre para empezar.</p>
+            <ul className="mt-5 grid gap-2.5 sm:grid-cols-2" data-testid="lista-votantes">
+              {votantes.map((v, i) => (
+                <li key={v.id} className="aparecer" style={{ "--i": i } as React.CSSProperties}>
+                  <button
+                    onClick={() => elegir(v)}
+                    className="group flex min-h-16 w-full items-center gap-3 rounded-xl border bg-background px-3.5 text-left text-base font-semibold transition-[border-color,background-color,box-shadow,transform] duration-200 hover:border-primary/50 hover:bg-accent/50 hover:shadow-sm focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none active:scale-[0.99]"
+                  >
+                    <span
+                      aria-hidden
+                      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-bold text-secondary-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
+                    >
+                      {v.nombre.split(" ").slice(0, 2).map((x) => x[0]).join("")}
+                    </span>
+                    {v.nombre}
+                    <ChevronRightIcon aria-hidden className="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </Pantalla>
     );
   }
 
   const encabezado = (
-    <header className="sticky top-0 z-30 border-b bg-encabezado/95 backdrop-blur">
-      <div className="mx-auto max-w-6xl space-y-2 px-4 py-2.5">
+    <header className="sticky top-0 z-30 border-b bg-encabezado/90 shadow-xs backdrop-blur-md">
+      <div className="mx-auto max-w-6xl space-y-2.5 px-4 py-3">
         <div className="flex items-center justify-between gap-3 text-sm">
-          <p className="truncate text-muted-foreground" data-testid="ronda-actual">
+          <Simbolo className="size-7" />
+          <p className="mr-auto truncate font-semibold text-foreground" data-testid="ronda-actual">
             Ronda {datos.ronda.numero} de {datos.totalRondas} · {propuestas.length} propuestas
           </p>
           <IndicadorGuardado estado={guardado} />
         </div>
         <div className="flex items-center gap-3">
-          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={hechas} aria-valuemin={0} aria-valuemax={total}>
-            <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${total ? (hechas / total) * 100 : 0}%` }} />
+          <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={hechas} aria-valuemin={0} aria-valuemax={total}>
+            <div
+              className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
+              style={{ width: `${total ? (hechas / total) * 100 : 0}%` }}
+            />
           </div>
-          <span className="shrink-0 text-sm font-medium tabular-nums" data-testid="progreso">
+          <span className="shrink-0 text-sm font-semibold cifras" data-testid="progreso">
             {hechas} de {total} calificaciones
           </span>
         </div>
@@ -399,9 +439,10 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
                   aria-current={fase === "calificar" && i === indice ? "step" : undefined}
                   data-completa={completa(p.id)}
                   className={cn(
-                    "block size-3 rounded-full border transition",
-                    completa(p.id) ? "border-primary bg-primary" : "border-muted-foreground/40 bg-transparent",
-                    fase === "calificar" && i === indice && "ring-2 ring-ring ring-offset-1",
+                    "block h-2.5 rounded-full border transition-all duration-200",
+                    fase === "calificar" && i === indice ? "w-6" : "w-2.5",
+                    completa(p.id) ? "border-primary bg-primary" : "border-muted-foreground/40 bg-card",
+                    fase === "calificar" && i === indice && !completa(p.id) && "border-foreground bg-foreground/80",
                   )}
                 />
               </li>
@@ -418,7 +459,7 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
   if (fase === "cerrada-durante") {
     return (
       <Pantalla>
-        <Mensaje icono={<LockIcon className="size-10 text-muted-foreground" />} titulo="La votación se cerró" testid="cerrada-durante">
+        <Mensaje icono={<IconoCirculo><LockIcon className="size-9" /></IconoCirculo>} titulo="La votación se cerró" testid="cerrada-durante">
           <p>Ya no se pueden hacer cambios.</p>
           <p className="mt-2">
             {enviadoAt
@@ -433,10 +474,15 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
   if (fase === "enviado") {
     return (
       <Pantalla>
-        <Mensaje icono={<CheckCircle2Icon className="size-12 text-primary" />} titulo={`Gracias, ${votante.nombre.split(" ")[0]}`} testid="enviado">
-          <p className="text-lg text-foreground">Tu calificación quedó registrada. Los resultados se muestran al cierre de la votación.</p>
-          {enviadoAt && <p className="mt-2 text-sm">Enviado el {fechaHora.format(new Date(enviadoAt))}</p>}
-          <Button variant="outline" className="mt-6 h-11 text-foreground" onClick={() => irA(0)} data-testid="corregir">
+        <Mensaje icono={<CheckAnimado />} titulo={`Gracias, ${votante.nombre.split(" ")[0]}`} testid="enviado">
+          <p className="text-lg leading-relaxed text-foreground">Tu calificación quedó registrada. Los resultados se muestran al cierre de la votación.</p>
+          {enviadoAt && (
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-3.5 py-1.5 text-sm font-medium text-secondary-foreground">
+              <CheckCircle2Icon className="size-4 text-primary" /> Enviado el {fechaHora.format(new Date(enviadoAt))}
+            </p>
+          )}
+          <div />
+          <Button variant="outline" size="lg" className="mt-7 text-foreground" onClick={() => irA(0)} data-testid="corregir">
             Corregir mis calificaciones
           </Button>
           <p className="mt-6 text-sm">
@@ -454,13 +500,14 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
     return (
       <Pantalla>
         {encabezado}
-        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8" data-testid="revisar">
-          <h1 className="text-3xl font-semibold">Enviar mi voto</h1>
+        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 aparecer" data-testid="revisar">
+          <p className="text-xs font-semibold tracking-[0.18em] text-primary uppercase">Último paso</p>
+          <h1 className="mt-2 text-4xl font-semibold">Enviar mi voto</h1>
           <p className="mt-2 text-muted-foreground">
             Calificaste {propuestas.length - incompletas.length} de {propuestas.length} propuestas.
           </p>
           {incompletas.length > 0 ? (
-            <div className="mt-6 rounded-xl border border-advertencia/40 bg-advertencia-fondo p-4 text-advertencia-foreground" data-testid="faltantes">
+            <div className="mt-6 rounded-2xl border border-advertencia/30 bg-advertencia-fondo p-5 text-advertencia-foreground" data-testid="faltantes">
               <p className="flex items-center gap-2 font-medium">
                 <AlertTriangleIcon className="size-5" /> Te falta calificar:
               </p>
@@ -479,12 +526,12 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
               </ul>
             </div>
           ) : (
-            <p className="mt-6 flex items-center gap-2 rounded-xl bg-accent px-4 py-3 text-accent-foreground">
+            <p className="mt-6 flex items-center gap-2.5 rounded-2xl border border-primary/25 bg-accent px-5 py-4 font-semibold text-accent-foreground">
               <CheckIcon className="size-5" /> Calificaste todo. Ya puedes enviar.
             </p>
           )}
           {error && (
-            <p role="alert" className="mt-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <p role="alert" className="mt-4 rounded-lg border border-destructive/20 bg-destructive-fondo px-3.5 py-2.5 text-sm text-destructive">
               {error}
             </p>
           )}
@@ -508,7 +555,7 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
       {encabezado}
 
       {cambiosSinEnviar && (
-        <div className="border-b border-advertencia/40 bg-advertencia-fondo text-advertencia-foreground" data-testid="cambios-sin-enviar">
+        <div className="border-b border-advertencia/30 bg-advertencia-fondo text-advertencia-foreground" data-testid="cambios-sin-enviar">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-sm">
             <AlertTriangleIcon className="size-4" />
             <span className="flex-1">Tienes cambios sin enviar. Tu voto anterior sigue contando hasta que vuelvas a enviar.</span>
@@ -519,18 +566,23 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
         </div>
       )}
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-4 pb-32" {...gestos} data-testid="calificar">
-        <div className="mb-4 rounded-xl bg-muted/60 px-4 py-3 text-sm">
-          <p className="font-medium">¿Qué tanto cumple cada propuesta con cada criterio? Califica de 1 a 5</p>
-          <p className="mt-1 text-muted-foreground">{ESCALA.map((e) => `${e.valor} ${e.etiqueta}`).join(" · ")}</p>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-5 pb-36" {...gestos} data-testid="calificar">
+        <div className="mb-5 flex gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 text-sm shadow-xs">
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground" aria-hidden>
+            <GaugeIcon className="size-4" />
+          </span>
+          <div>
+            <p className="font-semibold">¿Qué tanto cumple cada propuesta con cada criterio? Califica de 1 a 5</p>
+            <p className="mt-0.5 text-muted-foreground">{ESCALA.map((e) => `${e.valor} ${e.etiqueta}`).join(" · ")}</p>
+          </div>
         </div>
 
         {actual && (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
-            <section className="space-y-4 lg:sticky lg:top-40">
+          <div key={actual.id} className="grid gap-6 aparecer lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start lg:gap-8">
+            <section className="space-y-5 lg:sticky lg:top-40">
               <button
                 onClick={() => setLogoGrande(true)}
-                className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl border bg-lienzo-logo p-6 shadow-xs"
+                className="group relative flex aspect-[4/3] w-full cursor-zoom-in items-center justify-center rounded-2xl border bg-lienzo-logo p-8 shadow-sm transition-shadow hover:shadow-md"
                 aria-label="Ver logo en pantalla completa"
                 data-testid="logo"
               >
@@ -544,22 +596,26 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
                     className="max-h-full max-w-full object-contain"
                   />
                 )}
+                <span className="absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-lg border border-border bg-card/90 text-muted-foreground opacity-80 shadow-xs transition-opacity group-hover:opacity-100" aria-hidden>
+                  <Maximize2Icon className="size-4" />
+                </span>
               </button>
               <div>
-                <p className="font-mono text-sm text-muted-foreground">
-                  Folio {f3(actual.folio)} · Propuesta {indice + 1} de {propuestas.length}
+                <p className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                  <span className="rounded-full border border-border bg-card px-2.5 py-0.5 tracking-normal normal-case cifras">Folio {f3(actual.folio)}</span>
+                  Propuesta {indice + 1} de {propuestas.length}
                 </p>
-                <h1 className="mt-1 text-3xl leading-tight font-semibold break-words sm:text-4xl" data-testid="nombre">
+                <h1 className="mt-3 text-4xl leading-[1.05] font-semibold break-words sm:text-5xl" data-testid="nombre">
                   {actual.nombre_propuesto}
                 </h1>
                 <p
-                  className={cn("mt-3 leading-relaxed break-words whitespace-pre-line text-foreground/85", !verMas && "line-clamp-4")}
+                  className={cn("mt-4 text-base leading-relaxed break-words whitespace-pre-line text-foreground/80 sm:text-lg", !verMas && "line-clamp-4")}
                   data-testid="significado"
                 >
                   {actual.significado}
                 </p>
                 {actual.significado.length > 220 && (
-                  <button className="mt-1 text-sm font-medium text-primary underline-offset-2 hover:underline" onClick={() => setVerMas((v) => !v)}>
+                  <button className="mt-2 text-sm font-semibold text-primary underline-offset-4 hover:underline" onClick={() => setVerMas((v) => !v)}>
                     {verMas ? "Ver menos" : "Ver más"}
                   </button>
                 )}
@@ -575,32 +631,47 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
               {criterios.map((c) => {
                 const valor = cal[actual.id]?.[c.id];
                 return (
-                  <fieldset key={c.id} className="rounded-2xl border bg-card p-4 shadow-xs" data-testid="criterio">
+                  <fieldset
+                    key={c.id}
+                    className={cn("rounded-2xl border bg-card p-4 shadow-xs transition-[border-color,box-shadow] duration-200 sm:p-5", valor && "border-primary/30")}
+                    data-testid="criterio"
+                  >
                     <legend className="sr-only">{c.nombre}</legend>
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold">{c.nombre}</p>
-                        {c.descripcion && <p className="text-sm text-muted-foreground">{c.descripcion}</p>}
+                        <p className="font-heading text-lg leading-tight font-semibold">{c.nombre}</p>
+                        {c.descripcion && <p className="mt-1 text-sm text-muted-foreground">{c.descripcion}</p>}
                       </div>
-                      {valor ? <CheckIcon className="size-5 shrink-0 text-primary" /> : <CircleIcon className="size-5 shrink-0 text-muted-foreground/40" />}
+                      {valor ? (
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <CheckIcon className="size-3.5" strokeWidth={3} />
+                        </span>
+                      ) : (
+                        <CircleIcon className="size-6 shrink-0 text-muted-foreground/30" />
+                      )}
                     </div>
-                    <div className="mt-3 grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={c.nombre}>
+                    <div className="mt-4 grid grid-cols-5 gap-1.5 sm:gap-2" role="radiogroup" aria-label={c.nombre}>
                       {ESCALA.map((e) => (
                         <button
                           key={e.valor}
                           role="radio"
                           aria-checked={valor === e.valor}
                           aria-label={`${e.valor}: ${e.etiqueta}`}
-                          onClick={() => calificar(actual.id, c.id, e.valor)}
+                          onClick={() => {
+                            navigator.vibrate?.(8);
+                            calificar(actual.id, c.id, e.valor);
+                          }}
                           data-valor={e.valor}
                           className={cn(
-                            "flex min-h-16 flex-col items-center justify-center gap-0.5 rounded-xl border px-0.5 py-2 transition outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95",
+                            "relative flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-0.5 py-2 transition-[background-color,border-color,box-shadow,transform] duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/40 active:scale-[0.94]",
                             valor === e.valor
-                              ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                              : "bg-background hover:border-primary/50 hover:bg-accent/40",
+                              ? "-translate-y-0.5 border-primary bg-primary text-primary-foreground shadow-md"
+                              : valor && e.valor < valor
+                                ? "border-primary/25 bg-accent text-accent-foreground hover:border-primary/50"
+                                : "bg-background hover:border-primary/50 hover:bg-accent/50",
                           )}
                         >
-                          <span className="text-xl leading-none font-semibold">{e.valor}</span>
+                          <span className="font-heading text-2xl leading-none font-semibold cifras">{e.valor}</span>
                           <span className={cn("text-center text-[10px] leading-tight sm:text-xs", valor === e.valor ? "opacity-90" : "text-muted-foreground")}>
                             {e.etiqueta}
                           </span>
@@ -616,7 +687,7 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
       </main>
 
       {/* Navegación inferior fija */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-encabezado/95 backdrop-blur" aria-label="Navegación entre propuestas">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-encabezado/90 shadow-[0_-8px_24px_rgb(var(--sombra)/0.06)] backdrop-blur-md" aria-label="Navegación entre propuestas">
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
           <Button variant="outline" className="h-12 flex-1 sm:flex-none" onClick={() => irA(indice - 1)} disabled={indice === 0} data-testid="anterior">
             <ChevronLeftIcon data-icon="inline-start" /> Anterior
@@ -645,7 +716,7 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
 
       {/* Índice */}
       {indiceAbierto && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center" onClick={() => setIndiceAbierto(false)}>
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-tinta/45 backdrop-blur-[3px] sm:items-center" onClick={() => setIndiceAbierto(false)}>
           <div
             className="max-h-[85dvh] w-full overflow-y-auto rounded-t-2xl bg-card p-5 shadow-xl sm:max-w-2xl sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
@@ -695,7 +766,7 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
 
       {/* Logo en pantalla completa */}
       {logoGrande && actual?.logoUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setLogoGrande(false)} data-testid="logo-grande">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-tinta/95 p-4" onClick={() => setLogoGrande(false)} data-testid="logo-grande">
           {/* eslint-disable-next-line @next/next/no-img-element -- URL firmada */}
           <img src={actual.logoUrl} alt={`Logo de ${actual.nombre_propuesto}`} className="max-h-full max-w-full rounded-lg bg-white object-contain p-4" />
           <Button variant="secondary" size="icon" className="absolute top-4 right-4" aria-label="Cerrar">
@@ -729,16 +800,41 @@ function Pantalla({ children }: { children: React.ReactNode }) {
 }
 
 function Marca() {
-  return <p className="text-xs font-medium tracking-[0.2em] text-primary uppercase">Concurso identidad</p>;
+  return <Logotipo tamano="sm" className="justify-center" />;
+}
+
+/** Palomita que se dibuja (animación sobria) dentro de un círculo esmeralda con destellos dorados. */
+function CheckAnimado() {
+  return (
+    <span className="relative flex size-24 items-center justify-center">
+      <span className="absolute inset-0 animate-ping rounded-full bg-primary/10 [animation-iteration-count:2]" aria-hidden />
+      <svg viewBox="0 0 96 96" className="relative size-24" aria-hidden>
+        <circle cx="48" cy="48" r="44" className="fill-accent stroke-primary" strokeWidth="3" />
+        <path
+          d="M30 49 l12 12 l24 -26"
+          fill="none"
+          className="stroke-primary [stroke-dasharray:60] [stroke-dashoffset:60] motion-safe:animate-[trazo_650ms_300ms_ease-out_forwards] motion-reduce:[stroke-dashoffset:0]"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="84" cy="16" r="4" className="fill-oro" />
+        <circle cx="12" cy="76" r="3" className="fill-oro" />
+        <circle cx="90" cy="70" r="2.5" className="fill-oro/70" />
+      </svg>
+    </span>
+  );
 }
 
 function Mensaje({ icono, titulo, testid, children }: { icono: React.ReactNode; titulo: string; testid?: string; children: React.ReactNode }) {
   return (
-    <main className="flex flex-1 items-center justify-center px-6 py-16" data-testid={testid}>
-      <div className="max-w-md text-center">
+    <main className="flex flex-1 items-center justify-center px-5 py-14" data-testid={testid}>
+      <div className="w-full max-w-lg rounded-3xl border bg-card px-6 py-10 text-center shadow-lg aparecer sm:px-10">
         <div className="flex justify-center">{icono}</div>
-        <Marca />
-        <h1 className="mt-3 text-3xl font-semibold">{titulo}</h1>
+        <div className="mt-6">
+          <Marca />
+        </div>
+        <h1 className="mt-4 text-4xl font-semibold">{titulo}</h1>
         <div className="mt-3 text-muted-foreground">{children}</div>
       </div>
     </main>
@@ -750,7 +846,7 @@ function PantallaEstado({ estado }: { estado: EstadoVotacion }) {
   if (estado.tipo === "cerrada") {
     return (
       <Pantalla>
-        <Mensaje icono={<LockIcon className="size-10 text-muted-foreground" />} titulo="La votación ya cerró" testid="estado-cerrada">
+        <Mensaje icono={<IconoCirculo><LockIcon className="size-9" /></IconoCirculo>} titulo="La votación ya cerró" testid="estado-cerrada">
           <p>La votación de la Ronda {estado.ronda.numero} ya cerró. Gracias por participar.</p>
           {estado.hayMasRondas && <p className="mt-2">Te avisaremos cuando abra la siguiente ronda.</p>}
           <Button variant="outline" className="mt-6 h-11 text-foreground" onClick={recargar}>
@@ -762,13 +858,26 @@ function PantallaEstado({ estado }: { estado: EstadoVotacion }) {
   }
   return (
     <Pantalla>
-      <Mensaje icono={<LockIcon className="size-10 text-muted-foreground" />} titulo="La votación aún no está abierta" testid="estado-sin-abrir">
+      <Mensaje icono={<IconoCirculo><LockIcon className="size-9" /></IconoCirculo>} titulo="La votación aún no está abierta" testid="estado-sin-abrir">
         <p>Vuelve a este link cuando te avisen que la votación está abierta.</p>
         <Button variant="outline" className="mt-6 h-11" onClick={recargar}>
           Volver a revisar
         </Button>
       </Mensaje>
     </Pantalla>
+  );
+}
+
+function IconoCirculo({ children, tono = "neutro" }: { children: React.ReactNode; tono?: "neutro" | "error" }) {
+  return (
+    <span
+      className={cn(
+        "flex size-20 items-center justify-center rounded-full",
+        tono === "error" ? "bg-destructive-fondo text-destructive" : "bg-secondary text-muted-foreground",
+      )}
+    >
+      {children}
+    </span>
   );
 }
 

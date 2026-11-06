@@ -7,7 +7,7 @@ import { exigirAdmin } from "@/lib/datos/auth";
 import { resultadosDeRonda } from "@/lib/datos/resultados";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Pasar a la siguiente ronda · Concurso identidad" };
+export const metadata = { title: "Pasar a la siguiente ronda · Concurso Identidad" };
 
 export default async function AvanzarPage({ params }: PageProps<"/admin/rondas/[id]/avanzar">) {
   await exigirAdmin();

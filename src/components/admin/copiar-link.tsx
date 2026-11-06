@@ -4,6 +4,7 @@ import { CheckIcon, LinkIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /** Copia el link corto de votación para pegarlo en correos, Teams o WhatsApp. */
 export function CopiarLink({ url, compacto = false }: { url: string; compacto?: boolean }) {
@@ -27,10 +28,17 @@ export function CopiarLink({ url, compacto = false }: { url: string; compacto?: 
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={copiar} data-testid="copiar-link" title={url}>
-      {copiado ? <CheckIcon data-icon="inline-start" /> : <LinkIcon data-icon="inline-start" />}
-      {compacto ? <span className="hidden xl:inline">Copiar link de votación</span> : "Copiar link de votación"}
-      {compacto && <span className="xl:hidden">Link</span>}
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={copiar}
+      data-testid="copiar-link"
+      title={url}
+      aria-label="Copiar link de votación"
+      className={cn(compacto && "max-2xl:size-8 max-2xl:px-0")}
+    >
+      {copiado ? <CheckIcon data-icon="inline-start" className="text-exito" /> : <LinkIcon data-icon="inline-start" />}
+      <span className={cn(compacto && "hidden 2xl:inline")}>{copiado ? "Copiado" : "Copiar link de votación"}</span>
     </Button>
   );
 }

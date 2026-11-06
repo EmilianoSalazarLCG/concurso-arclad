@@ -2,6 +2,8 @@ import ExcelJS from "exceljs";
 import { NextResponse, type NextRequest } from "next/server";
 import { obtenerAdminActual } from "@/lib/datos/auth";
 import { todasPropuestasFiltradas } from "@/lib/datos/gestion";
+import { adjunto } from "@/lib/descarga";
+import { estilizarEncabezado } from "@/lib/excel-marca";
 import { leerFiltros } from "@/lib/validacion/filtros";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest) {
   const filas = await todasPropuestasFiltradas(leerFiltros(request.nextUrl.searchParams));
 
   const libro = new ExcelJS.Workbook();
-  libro.creator = "Concurso identidad";
+  libro.creator = "Concurso Identidad";
   libro.created = new Date();
   const hoja = libro.addWorksheet("Propuestas", { views: [{ state: "frozen", ySplit: 1 }] });
   const formatoFecha = "dd/mm/yyyy hh:mm";
@@ -74,20 +76,17 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const encabezado = hoja.getRow(1);
-  encabezado.font = { bold: true, color: { argb: "FFFFFFFF" } };
-  encabezado.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F6F4A" } };
-  hoja.autoFilter = { from: "A1", to: { row: 1, column: hoja.columns.length } };
+  estilizarEncabezado(hoja);
   for (const clave of ["significado", "notas_internas", "motivo_descarte"]) {
     hoja.getColumn(clave).alignment = { wrapText: true, vertical: "top" };
   }
 
   const buffer = await libro.xlsx.writeBuffer();
-  const nombre = `propuestas-concurso-identidad-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const nombre = "Concurso Identidad - Propuestas.xlsx";
   return new NextResponse(buffer as ArrayBuffer, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="${nombre}"`,
+      "Content-Disposition": adjunto(nombre),
       "Cache-Control": "no-store",
     },
   });

@@ -46,7 +46,7 @@ export function PropuestasRonda({
         </Button>
       )}
       {!editable && (
-        <p className="rounded-lg bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
+        <p className="rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
           Las propuestas solo se pueden agregar o quitar mientras la ronda está pendiente.
         </p>
       )}
@@ -95,10 +95,10 @@ export function PropuestasRonda({
 
 function Lista({ titulo, testid, vacio, children }: { titulo: string; testid: string; vacio: string; children: React.ReactNode[] }) {
   return (
-    <section className="rounded-xl border bg-card shadow-sm">
-      <h2 className="border-b px-4 py-3 text-base font-semibold">{titulo}</h2>
+    <section className="overflow-hidden rounded-2xl border bg-card shadow-xs">
+      <h2 className="border-b bg-muted/50 px-5 py-3.5 text-lg font-semibold">{titulo}</h2>
       {children.length === 0 ? (
-        <p className="px-4 py-6 text-sm text-muted-foreground">{vacio}</p>
+        <p className="px-5 py-8 text-center text-sm text-muted-foreground">{vacio}</p>
       ) : (
         <ul className="divide-y" data-testid={testid}>
           {children}
@@ -110,8 +110,8 @@ function Lista({ titulo, testid, vacio, children }: { titulo: string; testid: st
 
 function Fila({ p, children }: { p: Item; children?: React.ReactNode }) {
   return (
-    <li className="flex items-center gap-3 px-4 py-2.5 text-sm" data-folio={p.folio}>
-      <span className="font-mono text-muted-foreground tabular-nums">{f3(p.folio)}</span>
+    <li className="flex items-center gap-3 px-5 py-3 text-sm transition-colors hover:bg-muted/40" data-folio={p.folio}>
+      <span className="font-semibold text-muted-foreground cifras">{f3(p.folio)}</span>
       <span className="min-w-0 flex-1">
         <span className="font-medium">{p.nombre_propuesto}</span>
         <span className="text-muted-foreground"> · {p.participante_nombre}</span>

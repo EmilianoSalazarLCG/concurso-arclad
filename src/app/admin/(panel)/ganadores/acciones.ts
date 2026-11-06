@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { NoAutorizadoError } from "@/lib/datos/auth";
 import { confirmarGanadores, resultadosDeRonda, rondaFinal } from "@/lib/datos/resultados";
 import { falla, ok, type Resultado } from "@/lib/datos/tipos";
+import { EXCEL, estilizarEncabezado } from "@/lib/excel-marca";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -47,7 +48,7 @@ export async function paqueteAgencia(): Promise<Resultado<{ logos: { nombre: str
     const url = new Map(data.map((x) => [x.path, x.signedUrl]));
 
     const libro = new ExcelJS.Workbook();
-    libro.creator = "Concurso identidad";
+    libro.creator = "Concurso Identidad";
     const hoja = libro.addWorksheet("Ganadores");
     hoja.columns = [
       { header: "Posición", key: "posicion", width: 10 },
@@ -73,7 +74,7 @@ export async function paqueteAgencia(): Promise<Resultado<{ logos: { nombre: str
         archivo: logos[i].nombre,
       }),
     );
-    hoja.getRow(1).font = { bold: true };
+    estilizarEncabezado(hoja, EXCEL.tinta);
     hoja.getColumn("significado").alignment = { wrapText: true, vertical: "top" };
     const buffer = Buffer.from(await libro.xlsx.writeBuffer());
     return ok({ logos, excel: buffer.toString("base64") });

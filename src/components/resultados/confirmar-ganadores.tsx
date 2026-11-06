@@ -35,7 +35,7 @@ export function ConfirmarGanadores({
   }
 
   return (
-    <section className="max-w-2xl space-y-4 rounded-xl border bg-card p-5 shadow-sm" data-testid="form-ganadores">
+    <section className="max-w-2xl space-y-5 rounded-2xl border bg-card p-6 shadow-sm" data-testid="form-ganadores">
       <div>
         <h2 className="text-xl font-semibold">{cambiar ? "Cambiar ganadores" : "Confirmar ganadores"}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -44,9 +44,12 @@ export function ConfirmarGanadores({
       </div>
       {LUGARES.map((lugar, i) => (
         <label key={lugar} className="flex flex-wrap items-center gap-3">
-          <span className="w-24 text-sm font-medium">{lugar}</span>
+          <span className="flex w-28 items-center gap-2 text-sm font-semibold">
+            <span className={["size-3 rounded-full", i === 0 ? "bg-oro" : i === 1 ? "bg-plata" : "bg-bronce"].join(" ")} aria-hidden />
+            {lugar}
+          </span>
           <select
-            className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-card px-3 text-sm"
+            className="h-10 min-w-0 flex-1 cursor-pointer rounded-lg border border-input bg-card px-3 text-sm font-medium shadow-xs"
             value={ids[i] ?? ""}
             onChange={(e) => setIds((xs) => xs.map((x, j) => (j === i ? e.target.value : x)))}
             data-testid={`lugar-${i + 1}`}

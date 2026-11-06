@@ -45,22 +45,22 @@ export function TablaResultados({
 
   return (
     <>
-      <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
         <table className="w-full text-sm" data-testid="tabla-resultados">
-          <thead className="border-b bg-muted/50 text-left text-xs text-muted-foreground uppercase">
+          <thead className="border-b bg-muted/60 text-left text-[0.7rem] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
             <tr>
-              <th className="px-3 py-3 font-medium">Pos.</th>
-              <th className="px-3 py-3 font-medium">Folio</th>
-              <th className="px-3 py-3 font-medium">Logo</th>
-              <th className="px-3 py-3 font-medium">Nombre propuesto</th>
-              <th className="px-3 py-3 font-medium">Autor</th>
-              <th className="px-3 py-3 text-right font-medium">Promedio</th>
+              <th className="px-4 py-3.5">Pos.</th>
+              <th className="px-3 py-3.5">Folio</th>
+              <th className="px-3 py-3.5">Logo</th>
+              <th className="px-3 py-3.5">Nombre propuesto</th>
+              <th className="px-3 py-3.5">Autor</th>
+              <th className="px-3 py-3.5 text-right">Promedio</th>
               {criterios.map((c) => (
-                <th key={c.id} className="hidden px-3 py-3 text-right font-medium xl:table-cell" title={c.nombre}>
+                <th key={c.id} className="hidden px-3 py-3.5 text-right xl:table-cell" title={c.nombre}>
                   {c.nombre.split(" ")[0]}
                 </th>
               ))}
-              <th className="px-3 py-3 text-right font-medium">Gerentes</th>
+              <th className="px-3 py-3.5 text-right">Gerentes</th>
             </tr>
           </thead>
           <tbody>
@@ -73,49 +73,72 @@ export function TablaResultados({
                   data-folio={f.folio}
                   data-posicion={f.posicion}
                   className={cn(
-                    "cursor-pointer border-b hover:bg-muted/40",
-                    pasanSet.has(f.propuesta_id) && "bg-accent/40",
+                    "cursor-pointer border-b transition-colors hover:bg-muted/50",
+                    pasanSet.has(f.propuesta_id) && "bg-accent/30",
                     empatadas.includes(f.propuesta_id) && "bg-advertencia-fondo",
                   )}
                 >
-                  <td className="px-3 py-2 font-heading text-lg font-semibold tabular-nums">{f.posicion}</td>
-                  <td className="px-3 py-2 font-mono tabular-nums">{f3(f.folio)}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-lg font-heading text-base font-semibold cifras",
+                        f.posicion === 1 ? "bg-oro text-tinta" : pasanSet.has(f.propuesta_id) ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground",
+                      )}
+                    >
+                      {f.posicion}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 font-semibold text-muted-foreground cifras">{f3(f.folio)}</td>
                   <td className="px-3 py-2">
-                    <div className="flex size-11 items-center justify-center overflow-hidden rounded-md border bg-lienzo-logo">
+                    <div className="flex size-12 items-center justify-center overflow-hidden rounded-lg border bg-lienzo-logo p-1">
                       {f.logoUrl && (
                         // eslint-disable-next-line @next/next/no-img-element -- URL firmada
                         <img src={f.logoUrl} alt="" loading="lazy" className="max-h-full max-w-full object-contain" />
                       )}
                     </div>
                   </td>
-                  <td className="px-3 py-2 font-medium">
+                  <td className="px-3 py-3 font-heading text-base font-semibold">
                     {f.nombre_propuesto}
                     {empatadas.includes(f.propuesta_id) && (
-                      <Badge variant="outline" className="ml-2 border-advertencia text-advertencia-foreground">
+                      <Badge variant="advertencia" className="ml-2">
                         Empate
                       </Badge>
                     )}
                   </td>
-                  <td className="px-3 py-2">
-                    <span className="block">{f.participante}</span>
+                  <td className="px-3 py-3">
+                    <span className="block font-medium">{f.participante}</span>
                     <span className="text-xs text-muted-foreground">
                       {f.area} · {f.ciudad}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-right font-semibold tabular-nums" data-testid="promedio">
-                    {num(f.promedio_general)}
+                  <td className="px-3 py-3">
+                    <div className="flex items-center justify-end gap-2.5">
+                      <div className="hidden h-2 w-24 overflow-hidden rounded-full bg-muted sm:block" aria-hidden>
+                        <div
+                          className={cn("h-full rounded-full", pasanSet.has(f.propuesta_id) ? "bg-primary" : "bg-muted-foreground/40")}
+                          style={{ width: `${((f.promedio_general ?? 0) / 5) * 100}%` }}
+                        />
+                      </div>
+                      <span className="w-10 text-right font-heading text-base font-semibold cifras" data-testid="promedio">
+                        {num(f.promedio_general)}
+                      </span>
+                    </div>
                   </td>
                   {criterios.map((c) => (
-                    <td key={c.id} className="hidden px-3 py-2 text-right text-muted-foreground tabular-nums xl:table-cell">
+                    <td key={c.id} className="hidden px-3 py-3 text-right text-muted-foreground cifras xl:table-cell">
                       {num(f.promedio_por_criterio.find((p) => p.criterio_id === c.id)?.promedio)}
                     </td>
                   ))}
-                  <td className="px-3 py-2 text-right tabular-nums">{f.gerentes}</td>
+                  <td className="px-4 py-3 text-right font-medium cifras">{f.gerentes}</td>
                 </tr>
                 {i === ultimaQuePasa && i < filas.length - 1 && (
                   <tr data-testid="linea-corte">
-                    <td colSpan={7 + criterios.length} className="border-y-2 border-primary bg-primary/10 px-3 py-1.5 text-center text-xs font-semibold tracking-wide text-primary uppercase">
-                      ↑ {textoCorte}
+                    <td colSpan={7 + criterios.length} className="p-0">
+                      <div className="flex items-center gap-3 bg-card px-4 py-2">
+                        <span className="h-0.5 flex-1 rounded-full bg-primary" />
+                        <span className="rounded-full bg-primary px-3 py-1 text-[0.7rem] font-bold tracking-[0.1em] text-primary-foreground uppercase">↑ {textoCorte}</span>
+                        <span className="h-0.5 flex-1 rounded-full bg-primary" />
+                      </div>
                     </td>
                   </tr>
                 )}

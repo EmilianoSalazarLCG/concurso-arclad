@@ -21,6 +21,8 @@ import {
   VoteIcon,
 } from "lucide-react";
 import { cargarPropuestasReunion, consultarEstadoReunion } from "@/app/admin/reunion/acciones";
+import { EstadoVacio } from "@/components/estado-vacio";
+import { Logotipo } from "@/components/marca/logotipo";
 import { Button } from "@/components/ui/button";
 import type { EstadoReunion, PropuestaReunion, RondaReunion } from "@/lib/datos/reunion";
 import { cn } from "@/lib/utils";
@@ -107,7 +109,7 @@ export function ModoReunion({
   const [ordenIds, setOrdenIds] = useState<string[]>([]);
   const [vista, setVista] = useState<Vista>({ tipo: "galeria" });
   const [mostrarAutor, setMostrarAutor] = useState(false);
-  const [tema, setTema] = useState<Tema>("claro");
+  const [tema, setTema] = useState<Tema>("oscuro");
   const [pantallaCompleta, setPantallaCompleta] = useState(false);
   const [controles, setControles] = useState(true);
   const [estadoR, setEstadoR] = useState<EstadoReunion>(estadoInicial);
@@ -119,7 +121,8 @@ export function ModoReunion({
     /* eslint-disable react-hooks/set-state-in-effect -- preferencias que solo existen en el navegador */
     setMostrarAutor(leer("session", "reunion-autor") === "1");
     setOrden(leer("session", "reunion-orden") === "aleatorio" ? "aleatorio" : "folio");
-    setTema(leer("local", "reunion-tema") === "oscuro" ? "oscuro" : "claro");
+    // Por defecto, fondo tinta (presentación ejecutiva); el tema claro queda como opción.
+    setTema(leer("local", "reunion-tema") === "claro" ? "claro" : "oscuro");
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
@@ -284,7 +287,13 @@ export function ModoReunion({
   // ------------------------------------------------------------------ teclado
   const alTeclear = useEffectEvent((e: KeyboardEvent) => {
     const destino = e.target as HTMLElement | null;
-    if (destino?.closest("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+    // Esc siempre regresa a la galería (aunque el foco esté en una casilla o selector).
+    if (e.key === "Escape" && vista.tipo !== "galeria") {
+      setVista({ tipo: "galeria" });
+      return;
+    }
+    const escribiendo = destino?.closest("textarea, select, input:not([type=checkbox]):not([type=radio])");
+    if (escribiendo || e.metaKey || e.ctrlKey || e.altKey) return;
     const tecla = e.key.toLowerCase();
     if (tecla === "f") {
       e.preventDefault();
@@ -317,14 +326,28 @@ export function ModoReunion({
 
   const botonesGlobales = (
     <>
-      <Button variant="outline" onClick={alternarTema} data-testid="tema" aria-label={tema === "claro" ? "Tema oscuro" : "Tema claro"}>
+      <Button
+        variant="outline"
+        onClick={alternarTema}
+        data-testid="tema"
+        aria-label={tema === "claro" ? "Tema oscuro" : "Tema claro"}
+        title={tema === "claro" ? "Tema oscuro" : "Tema claro"}
+        className="max-2xl:size-9 max-2xl:px-0"
+      >
         {tema === "claro" ? <MoonIcon data-icon="inline-start" /> : <SunIcon data-icon="inline-start" />}
-        {tema === "claro" ? "Oscuro" : "Claro"}
+        <span className="hidden 2xl:inline">{tema === "claro" ? "Oscuro" : "Claro"}</span>
       </Button>
-      <Button variant="outline" onClick={alternarPantallaCompleta} data-testid="pantalla-completa">
+      <Button
+        variant="outline"
+        onClick={alternarPantallaCompleta}
+        data-testid="pantalla-completa"
+        aria-label={pantallaCompleta ? "Salir de pantalla completa (F)" : "Pantalla completa (F)"}
+        title={pantallaCompleta ? "Salir de pantalla completa (F)" : "Pantalla completa (F)"}
+        className="max-2xl:size-9 max-2xl:px-0"
+      >
         {pantallaCompleta ? <MinimizeIcon data-icon="inline-start" /> : <MaximizeIcon data-icon="inline-start" />}
-        {pantallaCompleta ? "Salir de pantalla completa" : "Pantalla completa"}
-        <kbd className="ml-1 text-xs opacity-60">F</kbd>
+        <span className="hidden 2xl:inline">{pantallaCompleta ? "Salir de pantalla completa" : "Pantalla completa"}</span>
+        <kbd className="ml-1 hidden text-xs opacity-60 2xl:inline">F</kbd>
       </Button>
     </>
   );
@@ -345,23 +368,23 @@ export function ModoReunion({
         data-testid="controles"
         data-visibles={controles}
         className={cn(
-          "fixed inset-x-0 top-0 z-30 flex flex-wrap items-center gap-3 border-b bg-encabezado/95 px-6 py-3 backdrop-blur",
+          "fixed inset-x-0 top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-encabezado/85 px-6 py-3 backdrop-blur-md",
           claseControles,
         )}
       >
         {vista.tipo === "galeria" ? (
           <>
-            <div className="mr-2">
-              <p className="font-heading text-xl leading-none font-semibold">
-                Concurso <span className="text-primary">identidad</span>
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">Modo reunión</p>
+            <div className="mr-3 flex items-center gap-3">
+              <Logotipo tamano="sm" />
+              <span className="hidden rounded-full border border-border px-2.5 py-0.5 text-[0.7rem] font-semibold tracking-[0.14em] text-muted-foreground uppercase 2xl:inline">
+                Modo reunión
+              </span>
             </div>
             <select
               aria-label="Qué mostrar"
               value={fuente}
               onChange={(e) => cambiarFuente(e.target.value)}
-              className="h-9 rounded-lg border border-input bg-card px-3 text-sm"
+              className="h-9 cursor-pointer rounded-lg border border-input bg-card px-3 text-sm font-medium"
               data-testid="fuente"
             >
               <option value="activas">Todas las propuestas activas</option>
@@ -371,7 +394,7 @@ export function ModoReunion({
                 </option>
               ))}
             </select>
-            <div role="radiogroup" aria-label="Orden" className="inline-flex rounded-lg border bg-card p-0.5">
+            <div role="radiogroup" aria-label="Orden" className="inline-flex rounded-lg border bg-card p-1">
               {(["folio", "aleatorio"] as const).map((o) => (
                 <button
                   key={o}
@@ -380,8 +403,8 @@ export function ModoReunion({
                   onClick={() => cambiarOrden(o)}
                   data-testid={`orden-${o}`}
                   className={cn(
-                    "rounded-md px-3 py-1 text-sm",
-                    orden === o ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+                    "rounded-md px-3 py-1 text-sm font-semibold transition-colors",
+                    orden === o ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {o === "folio" ? "Por folio" : "Aleatorio"}
@@ -440,23 +463,29 @@ export function ModoReunion({
 
       {/* Contenido */}
       {vista.tipo === "galeria" && (
-        <main className="flex-1 px-6 pt-24 pb-10 sm:px-10">
-          <p className="mb-6 font-heading text-3xl font-semibold" data-testid="contador">
-            {contador}
-          </p>
+        <main className="flex-1 px-6 pt-28 pb-12 sm:px-12">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <p className="font-heading text-5xl font-semibold cifras" data-testid="contador">
+              {contador}
+            </p>
+            <p className="hidden text-sm text-muted-foreground md:block">Clic en una propuesta para verla en grande · F pantalla completa</p>
+          </div>
           {lista.length === 0 ? (
-            <p className="py-24 text-center text-2xl text-muted-foreground">No hay propuestas en esta selección.</p>
+            <EstadoVacio className="mx-auto max-w-xl" titulo="No hay propuestas en esta selección">
+              Elige otra ronda o «Todas las propuestas activas».
+            </EstadoVacio>
           ) : (
-            <div className="grid gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(100%,19rem),1fr))]" data-testid="galeria">
-              {lista.map((p) => (
+            <div className="grid gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(100%,20rem),1fr))]" data-testid="galeria">
+              {lista.map((p, i) => (
                 <button
                   key={p.id}
                   onClick={() => setVista({ tipo: "detalle", id: p.id })}
                   data-testid="tarjeta-reunion"
                   data-folio={p.folio}
-                  className="group overflow-hidden rounded-2xl border bg-card text-left shadow-sm transition outline-none hover:-translate-y-1 hover:shadow-md focus-visible:ring-4 focus-visible:ring-ring/50"
+                  style={{ "--i": i } as React.CSSProperties}
+                  className="group aparecer overflow-hidden rounded-2xl border bg-card text-left shadow-md transition-[transform,box-shadow,border-color] duration-200 outline-none hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg focus-visible:ring-4 focus-visible:ring-ring/50"
                 >
-                  <div className="flex aspect-[4/3] items-center justify-center bg-lienzo-logo p-8">
+                  <div className="m-2 mb-0 flex aspect-[4/3] items-center justify-center rounded-xl bg-lienzo-logo p-8">
                     {p.logoUrl && (
                       // eslint-disable-next-line @next/next/no-img-element -- URL firmada
                       <img
@@ -467,9 +496,9 @@ export function ModoReunion({
                       />
                     )}
                   </div>
-                  <div className="flex items-baseline justify-between gap-3 p-5">
-                    <h2 className="text-2xl leading-tight font-semibold break-words xl:text-3xl">{p.nombre_propuesto}</h2>
-                    <span className="shrink-0 font-mono text-base text-muted-foreground">{folio3(p.folio)}</span>
+                  <div className="flex items-baseline justify-between gap-3 px-5 py-4">
+                    <h2 className="text-3xl leading-tight font-semibold break-words">{p.nombre_propuesto}</h2>
+                    <span className="shrink-0 text-sm font-semibold text-muted-foreground cifras">{folio3(p.folio)}</span>
                   </div>
                 </button>
               ))}
@@ -483,7 +512,7 @@ export function ModoReunion({
           className="grid min-h-dvh flex-1 grid-cols-1 gap-10 px-8 pt-24 pb-32 lg:h-dvh lg:flex-none lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)] lg:px-14"
           data-testid="detalle"
         >
-          <div className="flex min-h-[40vh] items-center justify-center overflow-hidden rounded-3xl bg-lienzo-logo p-10 lg:h-full lg:min-h-0">
+          <div key={actual.id} className="flex min-h-[40vh] animate-revelar items-center justify-center overflow-hidden rounded-3xl bg-lienzo-logo p-12 shadow-lg lg:h-full lg:min-h-0">
             {actual.logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element -- URL firmada
               <img
@@ -496,18 +525,18 @@ export function ModoReunion({
               />
             )}
           </div>
-          <div className="flex min-h-0 flex-col justify-center gap-6">
-            <p className="font-mono text-2xl text-muted-foreground" data-testid="folio-detalle">
+          <div key={`t-${actual.id}`} className="flex min-h-0 animate-revelar flex-col justify-center gap-6 [animation-delay:120ms]">
+            <p className="text-lg font-semibold tracking-[0.2em] text-primary uppercase cifras" data-testid="folio-detalle">
               Folio {folio3(actual.folio)}
             </p>
-            <h1 className="text-6xl leading-[1.05] font-semibold break-words xl:text-7xl" data-testid="nombre-detalle">
+            <h1 className="text-6xl leading-[1.02] font-semibold break-words xl:text-7xl" data-testid="nombre-detalle">
               {actual.nombre_propuesto}
             </h1>
-            <p className="min-h-0 overflow-y-auto text-2xl leading-relaxed break-words whitespace-pre-line text-foreground/85 xl:text-3xl">
+            <p className="min-h-0 overflow-y-auto text-2xl leading-relaxed break-words whitespace-pre-line text-foreground/80 xl:text-[1.75rem]">
               {actual.significado}
             </p>
             {mostrarAutor && (
-              <div className="border-t pt-5 text-2xl" data-testid="autor">
+              <div className="animate-revelar border-t border-border pt-5 text-2xl" data-testid="autor">
                 <p className="font-medium">{actual.participante_nombre}</p>
                 <p className="mt-1 text-muted-foreground">
                   {actual.area} · {actual.ciudad}
@@ -520,14 +549,14 @@ export function ModoReunion({
             {...propsControles}
             aria-label="Navegación entre propuestas"
             className={cn(
-              "fixed inset-x-0 bottom-6 z-30 mx-auto flex w-fit items-center gap-3 rounded-2xl border bg-encabezado/95 p-2 shadow-lg backdrop-blur",
+              "fixed inset-x-0 bottom-6 z-30 mx-auto flex w-fit items-center gap-3 rounded-2xl border border-border bg-encabezado/90 p-2 shadow-lg backdrop-blur-md",
               claseControles,
             )}
           >
             <Button variant="outline" size="lg" onClick={() => mover(-1)} aria-label="Anterior" data-testid="anterior">
               <ChevronLeftIcon data-icon="inline-start" /> Anterior
             </Button>
-            <span className="min-w-24 text-center text-lg tabular-nums" data-testid="posicion">
+            <span className="min-w-24 text-center font-heading text-xl font-semibold cifras" data-testid="posicion">
               {indice + 1} de {lista.length}
             </span>
             <Button variant="outline" size="lg" onClick={() => mover(1)} aria-label="Siguiente" data-testid="siguiente">

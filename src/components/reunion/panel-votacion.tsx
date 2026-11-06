@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2Icon, CircleDashedIcon, CircleIcon } from "lucide-react";
 import { consultarAvanceVotacion } from "@/app/admin/reunion/acciones";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { AvanceReunion } from "@/lib/datos/reunion";
 import { cn } from "@/lib/utils";
 
@@ -44,17 +45,17 @@ export function PanelVotacion({ urlVotar, linkCorto, qrSvg }: { urlVotar: string
   const porcentaje = avance ? Math.round((avance.completos / Math.max(1, avance.totalVotantes)) * 100) : 0;
 
   return (
-    <main className="grid flex-1 gap-12 px-8 pt-24 pb-12 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center lg:px-16" data-testid="panel-votacion">
+    <main className="grid flex-1 gap-14 px-8 pt-28 pb-12 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center lg:px-16" data-testid="panel-votacion">
       <section className="flex flex-col items-center gap-5">
         <div
-          className="w-[min(42vh,26rem)] rounded-3xl bg-white p-5 shadow-sm [&_svg]:h-auto [&_svg]:w-full"
+          className="w-[min(44vh,27rem)] rounded-[2rem] bg-lienzo-logo p-6 shadow-lg ring-1 ring-border [&_svg]:h-auto [&_svg]:w-full"
           aria-label={`Código QR para votar: ${urlVotar}`}
           role="img"
           data-testid="qr"
           // SVG generado en el servidor por la librería qrcode a partir de nuestra propia URL.
           dangerouslySetInnerHTML={{ __html: qrSvg }}
         />
-        <p className="text-center font-mono text-2xl font-medium break-all xl:text-3xl" data-testid="link-votar">
+        <p className="text-center font-heading text-3xl font-semibold break-all xl:text-4xl" data-testid="link-votar">
           {linkCorto}
         </p>
         <p className="text-lg text-muted-foreground">Escanea el código o abre el link para votar</p>
@@ -62,19 +63,23 @@ export function PanelVotacion({ urlVotar, linkCorto, qrSvg }: { urlVotar: string
 
       <section className="min-w-0 space-y-8">
         {avance === undefined ? (
-          <p className="text-2xl text-muted-foreground">Cargando avance…</p>
+          <div className="space-y-4" aria-busy="true">
+            <Skeleton className="h-6 w-72" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-4 w-full rounded-full" />
+          </div>
         ) : avance === null ? (
           <p className="text-3xl font-semibold">No hay votación abierta.</p>
         ) : (
           <>
             <div>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-sm font-semibold tracking-[0.2em] text-primary uppercase">
                 Ronda {avance.ronda.numero} · {avance.ronda.nombre} · {avance.totalPropuestas} propuestas
               </p>
-              <p className="mt-2 font-heading text-6xl font-semibold xl:text-7xl" data-testid="resumen-avance">
+              <p className="mt-3 font-heading text-6xl leading-[1.02] font-semibold cifras xl:text-7xl" data-testid="resumen-avance">
                 {avance.completos} de {avance.totalVotantes} gerentes han votado
               </p>
-              <div className="mt-5 h-4 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={porcentaje} aria-valuemin={0} aria-valuemax={100}>
+              <div className="mt-6 h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={porcentaje} aria-valuemin={0} aria-valuemax={100}>
                 <div className="h-full rounded-full bg-primary transition-[width] duration-700" style={{ width: `${porcentaje}%` }} />
               </div>
             </div>

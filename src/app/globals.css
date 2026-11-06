@@ -3,17 +3,44 @@
 @import "shadcn/tailwind.css";
 
 /*
- * Tema visual de Concurso identidad.
- * Todos los colores, radios y fuentes son variables: para adaptar a la marca
- * la marca del cliente basta con cambiar los valores en :root (no hay colores fijos en componentes).
- * La app usa solo tema claro.
+ * ============================================================================
+ * Sistema de diseño · Concurso Identidad
+ * ----------------------------------------------------------------------------
+ * TODOS los colores, radios, sombras y fuentes viven aquí como tokens.
+ * Los componentes solo usan los nombres (bg-primary, text-oro, shadow-md…),
+ * nunca valores sueltos. Para cambiar la paleta, se edita solo este archivo.
+ * Guía visual: /admin/estilo
+ * ============================================================================
  */
 
 @theme inline {
+  /* Tipografía (next/font inyecta --font-titulos y --font-texto en <html>) */
   --font-sans: var(--font-texto);
   --font-heading: var(--font-titulos);
   --font-mono: var(--font-geist-mono);
 
+  /* Escala tipográfica: 12 / 14 / 16 / 20 / 24 / 32 / 44 / 60 */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.35rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.6rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 2rem;
+  --text-3xl--line-height: 2.4rem;
+  --text-4xl: 2.75rem;
+  --text-4xl--line-height: 3.1rem;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1.05;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 1.02;
+
+  /* Colores semánticos (shadcn) */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -22,6 +49,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -29,101 +57,237 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
-  --color-advertencia: var(--advertencia);
-  --color-advertencia-foreground: var(--advertencia-foreground);
-  --color-advertencia-fondo: var(--advertencia-fondo);
-  --color-exito: var(--exito);
+  --color-destructive-fondo: var(--destructive-fondo);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Colores de marca y estados */
+  --color-tinta: var(--tinta);
+  --color-tinta-foreground: var(--tinta-foreground);
+  --color-oro: var(--oro);
+  --color-oro-suave: var(--oro-suave);
+  --color-oro-foreground: var(--oro-foreground);
+  --color-plata: var(--plata);
+  --color-bronce: var(--bronce);
+  --color-exito: var(--exito);
+  --color-exito-fondo: var(--exito-fondo);
+  --color-advertencia: var(--advertencia);
+  --color-advertencia-fondo: var(--advertencia-fondo);
+  --color-advertencia-foreground: var(--advertencia-foreground);
   --color-encabezado: var(--encabezado);
   --color-lienzo-logo: var(--lienzo-logo);
 
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Radios: 10 controles · 16 tarjetas · 24 paneles */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-3xl: 28px;
+  --radius-4xl: 32px;
+
+  /* Sombras suaves en capas (color base: tinta) */
+  --shadow-xs: 0 1px 2px rgb(var(--sombra) / 0.05);
+  --shadow-sm: 0 1px 2px rgb(var(--sombra) / 0.05), 0 2px 8px rgb(var(--sombra) / 0.04);
+  --shadow-md: 0 2px 4px rgb(var(--sombra) / 0.04), 0 10px 28px rgb(var(--sombra) / 0.08);
+  --shadow-lg: 0 4px 10px rgb(var(--sombra) / 0.05), 0 22px 56px rgb(var(--sombra) / 0.12);
+
+  /* Movimiento */
+  --animate-aparecer: aparecer 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-revelar: revelar 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-brillo: brillo 2.8s ease-in-out infinite;
 }
 
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes revelar {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes trazo {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes brillo {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ Tema claro */
 :root {
-  /* Superficies: fondo claro ligeramente cálido, tarjetas blancas */
-  --background: oklch(0.982 0.005 130);
-  --foreground: oklch(0.22 0.02 160);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.02 160);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.02 160);
-  --encabezado: oklch(1 0 0);
-  --lienzo-logo: oklch(0.975 0.004 130);
+  /* Paleta base */
+  --tinta: #0f1b2d;
+  --tinta-foreground: #f7f5f0;
+  --esmeralda: #0e7c66;
+  --esmeralda-hover: #0b6553;
+  --esmeralda-suave: #e3f2ee;
+  --marfil: #f7f5f0;
+  --superficie: #ffffff;
+  --arena: #e6e1d8;
+  --pizarra: #5b6472;
+  --oro: #c8a24a;
+  --oro-suave: #f6efd9;
+  --oro-foreground: #6b5318;
+  --plata: #8e98a5;
+  --bronce: #a8693a;
+  --sombra: 15 27 45;
 
-  /* Acento verde (marca) */
-  --primary: oklch(0.47 0.11 155);
-  --primary-foreground: oklch(0.99 0.01 155);
-  --accent: oklch(0.95 0.035 155);
-  --accent-foreground: oklch(0.33 0.08 155);
-  --ring: oklch(0.6 0.11 155);
-  --exito: oklch(0.52 0.12 155);
+  /* Semánticos */
+  --background: var(--marfil);
+  --foreground: var(--tinta);
+  --card: var(--superficie);
+  --card-foreground: var(--tinta);
+  --popover: var(--superficie);
+  --popover-foreground: var(--tinta);
+  --encabezado: var(--superficie);
+  --lienzo-logo: #fbfaf7;
 
-  /* Neutros */
-  --secondary: oklch(0.955 0.006 130);
-  --secondary-foreground: oklch(0.26 0.02 160);
-  --muted: oklch(0.955 0.006 130);
-  --muted-foreground: oklch(0.5 0.015 160);
-  --border: oklch(0.905 0.008 130);
-  --input: oklch(0.88 0.01 130);
+  --primary: var(--esmeralda);
+  --primary-foreground: #ffffff;
+  --primary-hover: var(--esmeralda-hover);
+  --accent: var(--esmeralda-suave);
+  --accent-foreground: var(--esmeralda-hover);
+  --ring: var(--esmeralda);
 
-  /* Estados */
-  --destructive: oklch(0.55 0.2 27);
-  --advertencia: oklch(0.6 0.13 70);
-  --advertencia-foreground: oklch(0.38 0.08 60);
-  --advertencia-fondo: oklch(0.97 0.04 85);
+  --secondary: #efebe3;
+  --secondary-foreground: var(--tinta);
+  --muted: #f1eee8;
+  --muted-foreground: var(--pizarra);
+  --border: var(--arena);
+  --input: #cfc8bb;
 
-  /* Bordes suaves */
-  --radius: 0.75rem;
+  --exito: #15803d;
+  --exito-fondo: #e7f4ec;
+  --advertencia: #b45309;
+  --advertencia-fondo: #fbf1e4;
+  --advertencia-foreground: #8a3f06;
+  --destructive: #b42318;
+  --destructive-fondo: #fbeceb;
+
+  --radius: 10px;
 }
 
 /*
- * Tema oscuro (solo modo reunión, para proyectores). Redefine los mismos tokens.
- * El lienzo del logo se mantiene claro: muchos logos están pensados para fondo blanco.
+ * ------------------------------------------------------------------ Tema oscuro
+ * Se usa en el modo reunión (fondo tinta). Mismos tokens, otros valores.
+ * El lienzo del logo se mantiene claro: muchos logos están hechos para fondo blanco.
  */
 .tema-oscuro {
   color-scheme: dark;
-  --background: oklch(0.17 0.012 165);
-  --foreground: oklch(0.96 0.006 130);
-  --card: oklch(0.215 0.014 165);
-  --card-foreground: oklch(0.96 0.006 130);
-  --popover: oklch(0.215 0.014 165);
-  --popover-foreground: oklch(0.96 0.006 130);
-  --encabezado: oklch(0.19 0.013 165);
-  --lienzo-logo: oklch(0.96 0.004 130);
-  --primary: oklch(0.74 0.13 155);
-  --primary-foreground: oklch(0.18 0.03 155);
-  --accent: oklch(0.32 0.05 155);
-  --accent-foreground: oklch(0.93 0.05 155);
-  --ring: oklch(0.7 0.12 155);
-  --secondary: oklch(0.27 0.012 165);
-  --secondary-foreground: oklch(0.94 0.006 130);
-  --muted: oklch(0.27 0.012 165);
-  --muted-foreground: oklch(0.74 0.012 150);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 18%);
-  --destructive: oklch(0.7 0.18 25);
+  --sombra: 0 0 0;
+  --background: var(--tinta);
+  --foreground: var(--marfil);
+  --card: #16243a;
+  --card-foreground: var(--marfil);
+  --popover: #16243a;
+  --popover-foreground: var(--marfil);
+  --encabezado: #122036;
+  --lienzo-logo: #f4f1ea;
+
+  --primary: #2fb596;
+  --primary-foreground: var(--tinta);
+  --primary-hover: #49c7a9;
+  --accent: #133a36;
+  --accent-foreground: #a6e8d6;
+  --ring: #49c7a9;
+
+  --secondary: #1d2e47;
+  --secondary-foreground: var(--marfil);
+  --muted: #1d2e47;
+  --muted-foreground: #a9b2bf;
+  --border: #2a3b55;
+  --input: #3a4d69;
+
+  --oro: #d9b65c;
+  --oro-suave: #2f2a1a;
+  --oro-foreground: #f0d58f;
+  --plata: #b7c0cb;
+  --bronce: #d08f5c;
+  --exito: #4ade80;
+  --exito-fondo: #12301f;
+  --advertencia: #f59e0b;
+  --advertencia-fondo: #33240f;
+  --advertencia-foreground: #f6c27a;
+  --destructive: #f87360;
+  --destructive-fondo: #3a1a17;
 }
 
+/* ------------------------------------------------------------------ Base */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   html {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   body {
     @apply bg-background text-foreground;
   }
-  h1, h2, h3 {
-    @apply font-heading tracking-tight;
+  h1,
+  h2,
+  h3 {
+    @apply font-heading text-foreground;
+    font-optical-sizing: auto;
+    letter-spacing: -0.012em;
+  }
+  h1 {
+    letter-spacing: -0.022em;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Aparición escalonada: style={{ "--i": indice }} */
+@utility aparecer {
+  animation: var(--animate-aparecer);
+  animation-delay: calc(min(var(--i, 0), 16) * 35ms);
+}
+
+@utility cifras {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* Movimiento reducido: sin animaciones ni transiciones largas */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

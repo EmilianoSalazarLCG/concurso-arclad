@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { BotonZipLogos } from "./boton-zip-logos";
 
 const claseSelect =
-  "h-9 rounded-lg border border-input bg-card px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40";
+  "h-10 cursor-pointer rounded-lg border border-input bg-card px-3 text-sm font-medium shadow-xs outline-none transition-[border-color,box-shadow] hover:border-foreground/30 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25";
 
 export function BarraFiltros({
   filtros,
@@ -54,17 +54,17 @@ export function BarraFiltros({
     filtros.q || filtros.area || filtros.ciudad || filtros.estado !== FILTROS_POR_DEFECTO.estado;
 
   return (
-    <div className="space-y-3 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
+    <div className="space-y-3 rounded-2xl border bg-card p-3 shadow-sm sm:p-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-56 flex-1">
-          <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
             aria-label="Buscar por folio, nombre propuesto o participante"
             placeholder="Buscar por folio, nombre propuesto o participante…"
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            className="h-9 pl-8"
+            className="h-10 pl-9"
             data-testid="buscar"
           />
         </div>

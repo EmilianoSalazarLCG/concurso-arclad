@@ -234,10 +234,10 @@ export function ZonaLogo({
           else setAviso("Eso no parece una imagen. Usa un archivo PNG o JPG.");
         }}
         className={cn(
-          "relative flex min-h-48 items-center justify-center rounded-xl border-2 border-dashed bg-lienzo-logo p-4 transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40",
-          !valor && "cursor-pointer hover:border-primary/50 hover:bg-accent/40",
-          arrastrando && "border-primary bg-accent/60",
-          error && "border-destructive/60",
+          "relative flex min-h-52 items-center justify-center rounded-xl border-[1.5px] border-dashed border-input bg-lienzo-logo p-4 transition-[border-color,background-color,box-shadow] duration-200 outline-none focus-visible:border-ring focus-visible:ring-4 focus-visible:ring-ring/20",
+          !valor && "cursor-pointer hover:border-primary/60 hover:bg-accent/50",
+          arrastrando && "scale-[1.01] border-solid border-primary bg-accent ring-4 ring-primary/15",
+          error && "border-destructive/60 bg-destructive-fondo/40",
         )}
       >
         {procesando ? (
@@ -246,7 +246,7 @@ export function ZonaLogo({
           </div>
         ) : valor ? (
           <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center">
-            <div className="flex h-36 w-full items-center justify-center rounded-lg bg-card p-2 sm:w-48">
+            <div className="flex h-36 w-full items-center justify-center rounded-lg border border-border bg-card p-3 shadow-xs sm:w-52">
               {/* eslint-disable-next-line @next/next/no-img-element -- object URL local */}
               <img src={valor.url} alt="Vista previa del logo" className="max-h-full max-w-full object-contain" />
             </div>
@@ -276,13 +276,17 @@ export function ZonaLogo({
             </div>
           </div>
         ) : (
-          <div className="pointer-events-none flex flex-col items-center gap-2 text-center">
-            <div className="flex items-center gap-3 text-primary">
-              <ClipboardPasteIcon className="size-6" strokeWidth={1.5} />
-              <ImageUpIcon className="size-6" strokeWidth={1.5} />
+          <div className="pointer-events-none flex flex-col items-center gap-2.5 text-center">
+            <div className="flex items-center gap-2">
+              <span className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-primary shadow-sm">
+                <ClipboardPasteIcon className="size-5" strokeWidth={1.75} />
+              </span>
+              <span className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-primary shadow-sm">
+                <ImageUpIcon className="size-5" strokeWidth={1.75} />
+              </span>
             </div>
             <p className="text-sm font-medium">
-              Pega el logo con <kbd className="rounded border bg-card px-1.5 py-0.5 font-mono text-xs">{esMac ? "⌘V" : "Ctrl+V"}</kbd>, arrástralo aquí o haz clic para elegirlo
+              Pega el logo con <kbd className="rounded-md border border-border bg-card px-1.5 py-0.5 font-mono text-xs shadow-xs">{esMac ? "⌘V" : "Ctrl+V"}</kbd>, arrástralo aquí o haz clic para elegirlo
             </p>
             <p className="text-xs text-muted-foreground">PNG o JPG · máximo 5 MB</p>
           </div>

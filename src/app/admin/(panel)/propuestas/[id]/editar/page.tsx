@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
+import { EncabezadoPagina } from "@/components/admin/encabezado-pagina";
 import { FormularioPropuesta } from "@/components/propuestas/formulario-propuesta";
 import { exigirAdmin } from "@/lib/datos/auth";
 import { urlFirmadaLogo } from "@/lib/datos/logos";
@@ -8,7 +9,7 @@ import { obtenerPropuesta, valoresAutocompletar } from "@/lib/datos/propuestas";
 import { formatearFolio } from "@/lib/datos/tipos";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Editar propuesta · Concurso identidad" };
+export const metadata = { title: "Editar propuesta · Concurso Identidad" };
 
 export default async function EditarPropuestaPage({ params }: PageProps<"/admin/propuestas/[id]/editar">) {
   await exigirAdmin();
@@ -24,10 +25,11 @@ export default async function EditarPropuestaPage({ params }: PageProps<"/admin/
       <Link href={`/admin/propuestas/${p.id}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeftIcon className="size-4" /> Volver al detalle
       </Link>
-      <div>
-        <h1 className="text-3xl font-semibold">Editar propuesta {folio}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">El folio no cambia. Si reemplazas el logo, el anterior se borra al guardar.</p>
-      </div>
+      <EncabezadoPagina
+        antetitulo={`Folio ${folio}`}
+        titulo="Editar propuesta"
+        descripcion="El folio no cambia. Si reemplazas el logo, el anterior se borra al guardar."
+      />
       <FormularioPropuesta
         areas={areas}
         ciudades={ciudades}

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from "lucide-react";
+import { EncabezadoPagina } from "@/components/admin/encabezado-pagina";
+import { EstadoVacio } from "@/components/estado-vacio";
 import { BarraFiltros } from "@/components/propuestas/barra-filtros";
 import { ListaPropuestas, type Vista } from "@/components/propuestas/lista-propuestas";
 import { buttonVariants } from "@/components/ui/button";
@@ -12,7 +14,7 @@ import { POR_PAGINA, filtrosAQuery, leerFiltros } from "@/lib/validacion/filtros
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Propuestas · Concurso identidad" };
+export const metadata = { title: "Propuestas · Concurso Identidad" };
 
 export default async function PropuestasPage({ searchParams }: PageProps<"/admin/propuestas">) {
   const admin = await exigirAdmin();
@@ -38,29 +40,30 @@ export default async function PropuestasPage({ searchParams }: PageProps<"/admin
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold">Propuestas</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Historial completo (solo administradores).</p>
-        </div>
-        <Link href="/admin/propuestas/nueva" className={buttonVariants({ className: "h-9" })}>
-          <PlusIcon data-icon="inline-start" />
-          Capturar propuesta
-        </Link>
-      </div>
+    <div className="space-y-7">
+      <EncabezadoPagina
+        antetitulo="Historial completo · solo administradores"
+        titulo="Propuestas"
+        descripcion="Busca, filtra, edita y exporta. Las descartadas se conservan con su etiqueta."
+        acciones={
+          <Link href="/admin/propuestas/nueva" className={buttonVariants({ size: "lg" })}>
+            <PlusIcon data-icon="inline-start" />
+            Capturar propuesta
+          </Link>
+        }
+      />
 
-      <dl className="grid grid-cols-3 gap-3 sm:max-w-lg" data-testid="contadores">
+      <dl className="grid grid-cols-3 gap-3 sm:max-w-xl" data-testid="contadores">
         {(
           [
             ["Activas", contadores.activas, "text-primary"],
             ["Descartadas", contadores.descartadas, "text-destructive"],
             ["Total", contadores.activas + contadores.descartadas, "text-foreground"],
           ] as const
-        ).map(([etiqueta, n, color]) => (
-          <div key={etiqueta} className="rounded-xl border bg-card px-4 py-3 shadow-sm">
-            <dt className="text-xs text-muted-foreground">{etiqueta}</dt>
-            <dd className={cn("font-heading text-2xl font-semibold tabular-nums", color)} data-testid={`contador-${etiqueta.toLowerCase()}`}>
+        ).map(([etiqueta, n, color], i) => (
+          <div key={etiqueta} className="aparecer rounded-xl border bg-card px-4 py-3.5 shadow-xs" style={{ "--i": i } as React.CSSProperties}>
+            <dt className="text-xs font-semibold text-muted-foreground">{etiqueta}</dt>
+            <dd className={cn("mt-1 font-heading text-3xl leading-none font-semibold cifras", color)} data-testid={`contador-${etiqueta.toLowerCase()}`}>
               {n}
             </dd>
           </div>
@@ -69,11 +72,28 @@ export default async function PropuestasPage({ searchParams }: PageProps<"/admin
 
       <BarraFiltros key={filtros.q} filtros={filtros} areas={areas} ciudades={ciudades} />
 
-      <p className="text-sm text-muted-foreground" data-testid="resumen-resultados">
+      <p className="text-sm text-muted-foreground cifras" data-testid="resumen-resultados">
         {total === 0 ? "Sin resultados con estos filtros." : `Mostrando ${desde}–${hasta} de ${total}`}
       </p>
 
-      {filas.length > 0 && <ListaPropuestas filas={filas} logos={logos} vistaInicial={vista} cookieVista={cookieVista} />}
+      {filas.length > 0 ? (
+        <ListaPropuestas filas={filas} logos={logos} vistaInicial={vista} cookieVista={cookieVista} />
+      ) : (
+        <EstadoVacio
+          titulo={contadores.activas + contadores.descartadas === 0 ? "Aún no hay propuestas" : "Nada coincide con tu búsqueda"}
+          accion={
+            contadores.activas + contadores.descartadas === 0 ? (
+              <Link href="/admin/propuestas/nueva" className={buttonVariants()}>
+                <PlusIcon data-icon="inline-start" /> Capturar la primera
+              </Link>
+            ) : undefined
+          }
+        >
+          {contadores.activas + contadores.descartadas === 0
+            ? "Cuando captures la primera propuesta aparecerá aquí."
+            : "Prueba con otro término o quita algunos filtros."}
+        </EstadoVacio>
+      )}
 
       {paginas > 1 && (
         <nav aria-label="Paginación" className="flex items-center justify-center gap-3">

@@ -8,6 +8,7 @@ const ENLACES = [
   { href: "/admin/propuestas/nueva", etiqueta: "Capturar propuesta" },
   { href: "/admin/propuestas", etiqueta: "Propuestas" },
   { href: "/admin/rondas", etiqueta: "Rondas" },
+  { href: "/admin/ganadores", etiqueta: "Ganadores" },
   { href: "/admin/mantenimiento", etiqueta: "Mantenimiento" },
 ] as const;
 
@@ -18,15 +19,16 @@ export function Navegacion() {
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
   return (
-    <nav aria-label="Panel" className="flex items-center gap-1">
+    <nav aria-label="Panel" className="flex items-center gap-0.5">
       {ENLACES.map((e) => (
         <Link
           key={e.href}
           href={e.href}
           aria-current={activo === e.href ? "page" : undefined}
           className={cn(
-            "rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-            activo === e.href && "bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground",
+            "relative rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            activo === e.href &&
+              "text-foreground after:absolute after:inset-x-3 after:-bottom-[9px] after:h-0.5 after:rounded-full after:bg-primary max-lg:bg-secondary max-lg:after:hidden",
           )}
         >
           {e.etiqueta}

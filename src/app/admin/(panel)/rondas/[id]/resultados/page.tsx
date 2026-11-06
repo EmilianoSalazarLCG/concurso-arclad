@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangleIcon, ArrowLeftIcon, ArrowRightIcon, FileSpreadsheetIcon, TrophyIcon } from "lucide-react";
+import { EncabezadoPagina } from "@/components/admin/encabezado-pagina";
+import { EstadoVacio } from "@/components/estado-vacio";
 import { AutoRefrescar } from "@/components/resultados/auto-refrescar";
 import { DeshacerAvance } from "@/components/resultados/deshacer-avance";
 import { TablaResultados } from "@/components/resultados/tabla-resultados";
@@ -12,7 +14,7 @@ import { resultadosDeRonda } from "@/lib/datos/resultados";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Resultados · Concurso identidad" };
+export const metadata = { title: "Resultados · Concurso Identidad" };
 
 const fecha = new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Mexico_City" });
 
@@ -37,49 +39,52 @@ export default async function ResultadosPage({ params }: PageProps<"/admin/ronda
         <ArrowLeftIcon className="size-4" /> Rondas
       </Link>
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold">
-            Resultados · Ronda {ronda.numero} de {d.totalRondas}
-          </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <Badge variant={ronda.estado === "abierta" ? "default" : "secondary"}>{ronda.estado}</Badge>
-            {ronda.nombre} · pasan las mejores {ronda.top_n} ·{" "}
-            <span className="font-medium text-foreground" data-testid="enviaron">
+      <EncabezadoPagina
+        antetitulo={`Ronda ${ronda.numero} de ${d.totalRondas} · ${ronda.nombre}`}
+        titulo={
+          <span className="flex flex-wrap items-center gap-3">
+            Resultados
+            <Badge variant={ronda.estado === "abierta" ? "solido" : "secondary"} className="font-sans">
+              {ronda.estado === "abierta" ? "Abierta" : ronda.estado === "cerrada" ? "Cerrada" : "Pendiente"}
+            </Badge>
+          </span>
+        }
+        descripcion={
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>Pasan las mejores {ronda.top_n}</span>
+            <span className="font-semibold text-foreground cifras" data-testid="enviaron">
               {d.enviaron} de {d.totalVotantes} gerentes enviaron
             </span>
-          </p>
-          {ronda.estado === "abierta" && (
-            <div className="mt-2">
-              <AutoRefrescar segundos={10} />
-            </div>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <a href={`/admin/rondas/${ronda.id}/resultados/exportar`} className={buttonVariants({ variant: "outline", size: "sm" })} data-testid="exportar-resultados">
-            <FileSpreadsheetIcon data-icon="inline-start" /> Exportar a Excel
-          </a>
-          {puedeAvanzar && (
-            <Link href={`/admin/rondas/${ronda.id}/avanzar`} className={buttonVariants({ size: "sm" })} data-testid="pasar-ronda">
-              Pasar a la Ronda {siguiente!.numero} <ArrowRightIcon data-icon="inline-end" />
-            </Link>
-          )}
-          {esFinal && ronda.estado === "cerrada" && (
-            <Link href="/admin/ganadores" className={buttonVariants({ size: "sm" })} data-testid="ver-ganadores">
-              <TrophyIcon data-icon="inline-start" /> Ganadores
-            </Link>
-          )}
-        </div>
-      </div>
+            {ronda.estado === "abierta" && <AutoRefrescar segundos={10} />}
+          </span>
+        }
+        acciones={
+          <>
+            <a href={`/admin/rondas/${ronda.id}/resultados/exportar`} className={buttonVariants({ variant: "outline", size: "sm" })} data-testid="exportar-resultados">
+              <FileSpreadsheetIcon data-icon="inline-start" /> Exportar a Excel
+            </a>
+            {puedeAvanzar && (
+              <Link href={`/admin/rondas/${ronda.id}/avanzar`} className={buttonVariants({ size: "sm" })} data-testid="pasar-ronda">
+                Pasar a la Ronda {siguiente!.numero} <ArrowRightIcon data-icon="inline-end" />
+              </Link>
+            )}
+            {esFinal && ronda.estado === "cerrada" && (
+              <Link href="/admin/ganadores" className={buttonVariants({ variant: "oro", size: "sm" })} data-testid="ver-ganadores">
+                <TrophyIcon data-icon="inline-start" /> Ganadores
+              </Link>
+            )}
+          </>
+        }
+      />
 
       {ronda.estado === "abierta" && (
-        <p className="rounded-xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
+        <p className="rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
           La votación sigue abierta: el ranking puede cambiar. Solo cuentan los votos enviados.
         </p>
       )}
 
       {d.avance && siguiente && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-accent/50 px-4 py-3 text-sm" data-testid="avance-realizado">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-accent px-5 py-4 text-sm text-accent-foreground" data-testid="avance-realizado">
           <p>
             <strong>{d.avance.propuestas} propuestas pasaron a la Ronda {siguiente.numero}</strong> el {fecha.format(new Date(d.avance.realizado_at))}
             {d.avance.por && ` por ${d.avance.por}`}.
@@ -89,8 +94,10 @@ export default async function ResultadosPage({ params }: PageProps<"/admin/ronda
       )}
 
       {!d.avance && corte.empate && (
-        <div className="flex gap-3 rounded-xl border border-advertencia/40 bg-advertencia-fondo px-4 py-3 text-advertencia-foreground" data-testid="aviso-empate">
-          <AlertTriangleIcon className="mt-0.5 size-5 shrink-0" />
+        <div className="flex gap-3.5 rounded-xl border border-advertencia/30 bg-advertencia-fondo px-5 py-4 text-advertencia-foreground shadow-xs" data-testid="aviso-empate">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-advertencia text-white">
+            <AlertTriangleIcon className="size-5" />
+          </span>
           <p>
             <strong>Empate en el lugar {corte.lugarEmpate}.</strong> {corte.empatadas.length} propuestas empatan y{" "}
             {corte.cupoEmpate === 1 ? "solo cabe 1" : `caben ${corte.cupoEmpate}`} dentro del Top {ronda.top_n}.{" "}
@@ -99,8 +106,10 @@ export default async function ResultadosPage({ params }: PageProps<"/admin/ronda
         </div>
       )}
       {esFinal && empatesTop.length > 0 && (
-        <div className="flex gap-3 rounded-xl border border-advertencia/40 bg-advertencia-fondo px-4 py-3 text-advertencia-foreground" data-testid="aviso-empate-top">
-          <AlertTriangleIcon className="mt-0.5 size-5 shrink-0" />
+        <div className="flex gap-3.5 rounded-xl border border-advertencia/30 bg-advertencia-fondo px-5 py-4 text-advertencia-foreground shadow-xs" data-testid="aviso-empate-top">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-advertencia text-white">
+            <AlertTriangleIcon className="size-5" />
+          </span>
           <p>
             <strong>Empate en el lugar {empatesTop.join(" y ")}.</strong> Resuélvelo en «Ganadores» antes de publicarlos.
           </p>
@@ -108,7 +117,7 @@ export default async function ResultadosPage({ params }: PageProps<"/admin/ronda
       )}
 
       {filas.length === 0 ? (
-        <p className="rounded-xl border border-dashed bg-card p-10 text-center text-muted-foreground">Esta ronda no tiene propuestas.</p>
+        <EstadoVacio titulo="Esta ronda no tiene propuestas">Agrega propuestas desde la página de la ronda antes de abrirla.</EstadoVacio>
       ) : (
         <TablaResultados
           rondaId={ronda.id}

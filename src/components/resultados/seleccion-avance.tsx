@@ -48,7 +48,7 @@ export function SeleccionAvance({
   return (
     <div className="space-y-4">
       {lugarEmpate !== null && (
-        <div className="flex gap-3 rounded-xl border border-advertencia/40 bg-advertencia-fondo px-4 py-3 text-advertencia-foreground" data-testid="aviso-empate">
+        <div className="flex gap-3 rounded-xl border border-advertencia/30 bg-advertencia-fondo px-5 py-4 text-advertencia-foreground shadow-xs" data-testid="aviso-empate">
           <AlertTriangleIcon className="mt-0.5 size-5 shrink-0" />
           <p>
             <strong>Empate en el lugar {lugarEmpate}.</strong> Están preseleccionadas todas las empatadas; quita las que no deben pasar.
@@ -56,7 +56,7 @@ export function SeleccionAvance({
         </div>
       )}
 
-      <div className="sticky top-14 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm">
+      <div className="sticky top-20 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card/95 px-5 py-3.5 shadow-md backdrop-blur">
         <p className={cn("text-sm", diferencia !== 0 && "font-medium text-advertencia-foreground")} data-testid="conteo-seleccion">
           {elegidas.length} seleccionadas de {topN}
           {diferencia > 0 && ` · sobran ${diferencia}`}
@@ -67,10 +67,10 @@ export function SeleccionAvance({
         </Button>
       </div>
 
-      <ul className="divide-y rounded-xl border bg-card shadow-sm" data-testid="lista-avance">
+      <ul className="divide-y overflow-hidden rounded-2xl border bg-card shadow-sm" data-testid="lista-avance">
         {filas.map((f) => (
           <li key={f.id} className={cn(empatadas.includes(f.id) && "bg-advertencia-fondo")}>
-            <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5">
+            <label className="flex cursor-pointer items-center gap-3.5 px-5 py-3 transition-colors hover:bg-muted/40">
               <input
                 type="checkbox"
                 className="size-5 accent-[var(--primary)]"

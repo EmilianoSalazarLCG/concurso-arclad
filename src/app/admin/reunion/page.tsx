@@ -5,7 +5,7 @@ import { estadoReunion, propuestasReunion, rondasReunion } from "@/lib/datos/reu
 import { linkVotacion } from "@/lib/link-votacion";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Modo reunión · Concurso identidad" };
+export const metadata = { title: "Modo reunión · Concurso Identidad" };
 
 export default async function ReunionPage() {
   await exigirAdmin();

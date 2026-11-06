@@ -21,7 +21,7 @@ const fecha = new Intl.DateTimeFormat("es-MX", {
 export async function generateMetadata({ params }: PageProps<"/admin/propuestas/[id]">) {
   await exigirAdmin();
   const p = await obtenerPropuestaGestion((await params).id);
-  return { title: p ? `${formatearFolio(p.folio)} · ${p.nombre_propuesto} · Concurso identidad` : "Propuesta" };
+  return { title: p ? `${formatearFolio(p.folio)} · ${p.nombre_propuesto} · Concurso Identidad` : "Propuesta" };
 }
 
 export default async function DetallePropuestaPage({ params }: PageProps<"/admin/propuestas/[id]">) {
@@ -63,7 +63,7 @@ export default async function DetallePropuestaPage({ params }: PageProps<"/admin
       </div>
 
       {descartada && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm" data-testid="aviso-descartada">
+        <div className="rounded-xl border border-destructive/25 bg-destructive-fondo px-5 py-4 text-sm" data-testid="aviso-descartada">
           <p className="font-medium text-destructive">Propuesta descartada</p>
           <p className="mt-0.5 text-muted-foreground">
             {p.descartada_at && `El ${fecha.format(new Date(p.descartada_at))}`}
@@ -73,9 +73,9 @@ export default async function DetallePropuestaPage({ params }: PageProps<"/admin
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-8">
         <div className="space-y-3">
-          <div className="flex aspect-square items-center justify-center rounded-xl border bg-lienzo-logo p-8 shadow-sm">
+          <div className="flex aspect-square items-center justify-center rounded-2xl border bg-lienzo-logo p-10 shadow-sm">
             {logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element -- URL firmada
               <img
@@ -96,15 +96,15 @@ export default async function DetallePropuestaPage({ params }: PageProps<"/admin
           </a>
         </div>
 
-        <div className="space-y-5 rounded-xl border bg-card p-6 shadow-sm">
+        <div className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-mono text-sm text-muted-foreground">Folio {formatearFolio(p.folio)}</p>
-              <h1 className="mt-1 text-3xl font-semibold break-words" data-testid="nombre-propuesto">
+              <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase cifras">Folio {formatearFolio(p.folio)}</p>
+              <h1 className="mt-2 text-4xl font-semibold break-words" data-testid="nombre-propuesto">
                 {p.nombre_propuesto}
               </h1>
             </div>
-            {descartada ? <Badge variant="destructive">Descartada</Badge> : <Badge variant="secondary">Activa</Badge>}
+            {descartada ? <Badge variant="destructive">Descartada</Badge> : <Badge variant="exito">Activa</Badge>}
           </div>
 
           <dl className="grid gap-4 text-sm sm:grid-cols-3">
@@ -114,15 +114,15 @@ export default async function DetallePropuestaPage({ params }: PageProps<"/admin
           </dl>
 
           <div>
-            <h2 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">Significado</h2>
-            <p className="mt-1.5 leading-relaxed break-words whitespace-pre-line" data-testid="significado">
+            <h2 className="font-sans text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">Significado</h2>
+            <p className="mt-2 text-base leading-relaxed break-words whitespace-pre-line text-foreground/85" data-testid="significado">
               {p.significado}
             </p>
           </div>
 
-          <div className="rounded-lg bg-muted/60 px-4 py-3">
-            <h2 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-              Notas internas <span className="normal-case">(solo admins)</span>
+          <div className="rounded-xl border border-oro/30 bg-oro-suave/60 px-4 py-3.5">
+            <h2 className="font-sans text-xs font-semibold tracking-[0.12em] text-oro-foreground uppercase">
+              Notas internas <span className="normal-case tracking-normal">(solo admins)</span>
             </h2>
             <p className="mt-1 text-sm break-words whitespace-pre-line">
               {p.notas_internas || <span className="text-muted-foreground">Sin notas.</span>}
@@ -172,8 +172,8 @@ export default async function DetallePropuestaPage({ params }: PageProps<"/admin
 function Dato({ etiqueta, valor, testid }: { etiqueta: string; valor: string; testid?: string }) {
   return (
     <div>
-      <dt className="text-xs text-muted-foreground">{etiqueta}</dt>
-      <dd className="mt-0.5 font-medium break-words" data-testid={testid}>
+      <dt className="text-xs font-semibold text-muted-foreground">{etiqueta}</dt>
+      <dd className="mt-1 font-medium break-words" data-testid={testid}>
         {valor}
       </dd>
     </div>

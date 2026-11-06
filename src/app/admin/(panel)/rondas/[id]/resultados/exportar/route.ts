@@ -2,6 +2,8 @@ import ExcelJS from "exceljs";
 import { NextResponse, type NextRequest } from "next/server";
 import { obtenerAdminActual } from "@/lib/datos/auth";
 import { detalleRonda, resultadosDeRonda } from "@/lib/datos/resultados";
+import { adjunto } from "@/lib/descarga";
+import { estilizarEncabezado } from "@/lib/excel-marca";
 
 export const dynamic = "force-dynamic";
 
@@ -14,13 +16,8 @@ export async function GET(request: NextRequest, { params }: RouteContext<"/admin
   const detalle = await detalleRonda(id);
 
   const libro = new ExcelJS.Workbook();
-  libro.creator = "Concurso identidad";
-  const estilo = (hoja: ExcelJS.Worksheet) => {
-    const h = hoja.getRow(1);
-    h.font = { bold: true, color: { argb: "FFFFFFFF" } };
-    h.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F6F4A" } };
-    hoja.autoFilter = { from: "A1", to: { row: 1, column: hoja.columns.length } };
-  };
+  libro.creator = "Concurso Identidad";
+  const estilo = (hoja: ExcelJS.Worksheet) => estilizarEncabezado(hoja);
 
   const ranking = libro.addWorksheet("Ranking", { views: [{ state: "frozen", ySplit: 1 }] });
   ranking.columns = [
@@ -77,7 +74,7 @@ export async function GET(request: NextRequest, { params }: RouteContext<"/admin
   return new NextResponse(buffer as ArrayBuffer, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="resultados-ronda-${d.ronda.numero}-concurso-identidad.xlsx"`,
+      "Content-Disposition": adjunto(`Concurso Identidad - Resultados Ronda ${d.ronda.numero}.xlsx`),
       "Cache-Control": "no-store",
     },
   });
