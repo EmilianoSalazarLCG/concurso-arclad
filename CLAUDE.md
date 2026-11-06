@@ -264,3 +264,4 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - Fase 6 (votación): /votar para gerentes, envío explícito, gestión de rondas. ✅
 - Fase 7 (resultados y cierre): ranking, avance entre rondas, ganadores, revelación. ✅
 - Fase de diseño: rediseño visual completo, marca «Concurso Identidad», guía /admin/estilo. ✅
+- Manuales (docs/manual): administrador y guía para votar, HTML fuente + PDF; ver docs/manual/LEEME.md. ✅

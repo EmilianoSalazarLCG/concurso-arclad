@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<title>Manual del administrador – Concurso Identidad</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700;1,9..144,500..600&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<section class="portada">
+  <svg class="patron" width="100%" height="100%" aria-hidden="true"><defs><pattern id="p" width="96" height="96" patternUnits="userSpaceOnUse"><rect x="12" y="12" width="26" height="26" rx="8" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="72" cy="25" r="5" fill="currentColor"/><path d="M60 68h14v16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="25" cy="74" r="12" fill="none" stroke="currentColor" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#p)"/></svg><div class="halo"></div>
+  <div><span class="logo"><svg width="38" height="38" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#0E7C66"/><path d="M11 13.5h5.5V25" fill="none" stroke="#F7F5F0" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="9" r="3.2" fill="#C8A24A"/></svg><span>Concurso <em>Identidad</em></span></span></div>
+  <div>
+    <p class="ante">People &amp; Culture · Manual de uso</p>
+    <h1>Manual del <em>administrador</em></h1>
+    <p class="bajada">Cómo capturar propuestas, guiar las tres rondas de votación de los gerentes y revelar a los ganadores.</p>
+  </div>
+  <div class="datos"><div><b>Portal</b>concurso-arclad.vercel.app/admin</div><div><b>Votación</b>concurso-arclad.vercel.app</div><div><b>Versión</b>Noviembre 2026</div></div>
+</section>
+<section class="hoja">
+  <p class="ante">Contenido</p>
+  <h2>Índice</h2>
+  <ul class="indice"><li class="grupo">Introducción</li><li><span class="t">Cómo funciona el concurso</span><span class="d">El embudo y quién hace qué</span><span class="relleno"></span><span class="p">3</span></li><li class="grupo">Portal de admin</li><li><span class="t">Iniciar sesión</span><span class="d">Acceso al portal</span><span class="relleno"></span><span class="p">4</span></li><li><span class="t">Panel de inicio</span><span class="d">Métricas, embudo y accesos</span><span class="relleno"></span><span class="p">5</span></li><li><span class="t">Capturar propuesta</span><span class="d">Formulario y logo</span><span class="relleno"></span><span class="p">6</span></li><li><span class="t">Lista de propuestas</span><span class="d">Buscar, filtrar y exportar</span><span class="relleno"></span><span class="p">7</span></li><li><span class="t">Detalle de una propuesta</span><span class="d">Editar, descartar y restaurar</span><span class="relleno"></span><span class="p">8</span></li><li><span class="t">Rondas</span><span class="d">Abrir, cerrar y compartir el link</span><span class="relleno"></span><span class="p">9</span></li><li><span class="t">Resultados de una ronda</span><span class="d">Ranking, corte y empates</span><span class="relleno"></span><span class="p">10</span></li><li><span class="t">Pasar a la siguiente ronda</span><span class="d">Selección del Top N</span><span class="relleno"></span><span class="p">11</span></li><li><span class="t">Ganadores</span><span class="d">Top 3 y paquete para la agencia</span><span class="relleno"></span><span class="p">12</span></li><li class="grupo">Modo reunión</li><li><span class="t">Modo reunión: galería</span><span class="d">Proyectar propuestas</span><span class="relleno"></span><span class="p">13</span></li><li><span class="t">Modo reunión: votación en vivo</span><span class="d">QR y avance</span><span class="relleno"></span><span class="p">14</span></li><li><span class="t">Modo reunión: resultados</span><span class="d">Ranking para proyectar</span><span class="relleno"></span><span class="p">15</span></li><li><span class="t">Modo reunión: revelar ganadores</span><span class="d">3er, 2º y 1er lugar</span><span class="relleno"></span><span class="p">16</span></li><li class="grupo">Cierre</li><li><span class="t">Lista rápida para el día de la votación</span><span class="d">Antes, durante y después</span><span class="relleno"></span><span class="p">17</span></li></ul>
+</section>
+
+<section class="hoja">
+  <p class="ante">Antes de empezar</p>
+  <h2>Cómo funciona el concurso</h2>
+  <p class="lead">Los colaboradores proponen un nombre y un logo. People &amp; Culture captura las propuestas y los 11 gerentes votan en tres rondas hasta elegir a los 3 ganadores.</p>
+  <div class="cuerpo">
+<div class="embudo">
+  <div class="etapa"><p class="k">Todas</p><p class="cifra">N</p><p class="q">Propuestas activas capturadas por P&amp;C</p></div>
+  <div class="etapa"><p class="k">Ronda 1</p><p class="cifra">15</p><p class="q">Pasan las mejores 15</p></div>
+  <div class="etapa"><p class="k">Ronda 2</p><p class="cifra">5</p><p class="q">Pasan las mejores 5</p></div>
+  <div class="etapa"><p class="k">Ronda 3</p><p class="cifra">3</p><p class="q">Ganadores: 1º, 2º y 3º</p></div>
+</div>
+<table class="tabla">
+  <thead><tr><th>Etapa</th><th>Quién vota</th><th>Qué hace el admin</th></tr></thead>
+  <tbody>
+    <tr><td>Captura</td><td>Nadie</td><td>Captura cada propuesta que llega por correo, revisa duplicados y descarta las que no apliquen.</td></tr>
+    <tr><td>Ronda 1</td><td>Los 11 gerentes</td><td>Agrega todas las propuestas activas, abre la votación, comparte el link y la cierra cuando todos enviaron.</td></tr>
+    <tr><td>Ronda 2</td><td>Los 11 gerentes</td><td>Revisa resultados, resuelve empates en el corte y pasa el Top 15; abre, comparte y cierra.</td></tr>
+    <tr><td>Ronda 3</td><td>Los 11 gerentes</td><td>Pasa el Top 5; al cerrar, confirma a los 3 ganadores y descarga el paquete para la agencia.</td></tr>
+    <tr><td>Reunión</td><td>—</td><td>Proyecta la galería, el avance de la votación, los resultados y la revelación de ganadores.</td></tr>
+  </tbody>
+</table>
+<div class="dos">
+  <div class="nota"><b>Cómo votan.</b> Cada gerente califica cada propuesta del 1 al 5 en cuatro criterios y presiona «Enviar mi voto». Solo cuentan los votos enviados.</div>
+  <div class="nota"><b>Anónimo.</b> Los gerentes no ven quién propuso cada nombre ni los resultados. Las calificaciones individuales solo se ven en este portal.</div>
+</div>
+<div class="nota oro"><b>Dos accesos distintos.</b> El portal de admin (<b>/admin</b>, con usuario y contraseña) es solo para People &amp; Culture. Los gerentes no tienen usuario: votan desde el link <b>concurso-arclad.vercel.app</b>.</div>
+</div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · /admin/login</p>
+  <h2>Iniciar sesión</h2>
+  <p class="lead">Entrada al portal de People &amp; Culture. Solo pueden entrar los usuarios dados de alta como administradores.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-01-login.jpg" alt=""></div></figure><ul class="acciones"><li><span>Escribe tu correo y tu contraseña y presiona <b>Iniciar sesión</b>.</span></li><li><span>Si aparece «No tienes acceso», tu usuario no está dado de alta como admin: pide que te agreguen.</span></li><li><span>Para salir, usa el ícono de <b>Cerrar sesión</b> en la esquina superior derecha.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · /admin</p>
+  <h2>Panel de inicio</h2>
+  <p class="lead">Vista general del concurso: cuántas propuestas hay, qué ronda está en curso y cuántos gerentes ya enviaron su voto.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-02-inicio.jpg" alt=""><span class="marca" style="left:8.68%;top:35.42%">1</span><span class="marca" style="left:7.22%;top:60.33%">2</span><span class="marca abajo" style="left:66.56%;top:2%">3</span></div></figure><ul class="acciones"><li class="num"><span class="n">1</span><span><b>Propuestas activas</b>: las que participarán en la Ronda 1 (las descartadas no cuentan).</span></li><li class="num"><span class="n">2</span><span><b>Embudo del concurso</b>: el estado de cada ronda (pendiente, votando o cerrada).</span></li><li class="num"><span class="n">3</span><span><b>Copiar link de votación</b>: copia el link para pegarlo en correo, Teams o WhatsApp.</span></li><li><span>Los accesos rápidos llevan a captura, propuestas, rondas, modo reunión y ganadores.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · Capturar propuesta</p>
+  <h2>Capturar propuesta</h2>
+  <p class="lead">Registra cada propuesta que llega por correo. Todos los campos son obligatorios excepto las notas internas.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-03-capturar.jpg" alt=""><span class="marca" style="left:23.96%;top:43%">1</span><span class="marca" style="left:67.22%;top:12.18%">2</span></div></figure><ul class="acciones"><li class="num"><span class="n">1</span><span><b>Logo</b>: pégalo con ⌘V (o Ctrl+V) desde el correo, arrástralo o haz clic para elegirlo. PNG o JPG de hasta 5 MB.</span></li><li class="num"><span class="n">2</span><span><b>Vista previa</b>: así se verá la propuesta en la galería y en la votación.</span></li><li><span><b>Guardar y capturar otra</b> (⇧⌘↵) limpia el formulario para seguir; <b>Guardar</b> (⌘↵) te lleva a la lista.</span></li><li><span>Área y ciudad se autocompletan; si escribes un nombre parecido a otro ya capturado, verás un aviso de posible duplicado.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · /admin/propuestas</p>
+  <h2>Lista de propuestas</h2>
+  <p class="lead">El historial completo, solo para admins: incluye las descartadas, las notas internas y quién capturó cada propuesta.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-04-lista-tabla.jpg" alt=""><span class="marca" style="left:8.4%;top:41.15%">1</span><span class="marca" style="left:71.12%;top:46.93%">2</span><span class="marca" style="left:85.45%;top:61.55%">3</span></div></figure><div class="dos-a"><figure class="captura"><div class="marco"><img src="capturas/admin-05-lista-tarjetas.jpg" alt=""></div><figcaption>Vista en tarjetas, tipo galería.</figcaption></figure><ul class="acciones"><li class="num"><span class="n">1</span><span><b>Busca</b> por folio, nombre o participante y filtra por estado, área o ciudad.</span></li><li class="num"><span class="n">2</span><span><b>Exportar a Excel</b> y <b>Descargar logos</b> respetan los filtros que tengas.</span></li><li class="num"><span class="n">3</span><span>Cambia entre <b>Tabla</b> y <b>Tarjetas</b>; la app recuerda tu elección.</span></li><li><span>Haz clic en una fila para abrir el detalle.</span></li></ul></div></div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · Detalle</p>
+  <h2>Detalle de una propuesta</h2>
+  <p class="lead">Todos los datos de la propuesta, el logo en grande y su historial: quién la capturó, quién la editó y en qué rondas participa.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-06-detalle.jpg" alt=""><span class="marca" style="left:50.49%;top:81.9%">1</span><span class="marca" style="left:56.8%;top:81.9%">2</span><span class="marca" style="left:85.79%;top:11.67%">3</span></div></figure><div class="dos-a"><figure class="captura"><div class="marco"><img src="capturas/admin-07-descartar.jpg" alt=""></div><figcaption>Descartar pide confirmación y un motivo opcional.</figcaption></figure><ul class="acciones"><li class="num"><span class="n">1</span><span><b>Editar</b>: corrige datos o reemplaza el logo. El folio nunca cambia.</span></li><li class="num"><span class="n">2</span><span><b>Descartar</b>: la propuesta sale del concurso, pero se conserva con su etiqueta. «Restaurar» la regresa.</span></li><li class="num"><span class="n">3</span><span>Usa <b>Anterior / Siguiente</b> para revisar por folio.</span></li><li><span>No se puede descartar una propuesta que ya está en una ronda abierta o cerrada.</span></li></ul></div></div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · /admin/rondas</p>
+  <h2>Rondas</h2>
+  <p class="lead">Aquí se abre y se cierra cada votación. Solo puede haber una ronda abierta a la vez.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-08-rondas.jpg" alt=""><span class="marca" style="left:7.22%;top:30.15%">1</span><span class="marca" style="left:81.3%;top:83.77%">2</span><span class="marca" style="left:79.97%;top:23.04%">3</span></div></figure><ul class="acciones"><li class="num"><span class="n">1</span><span>El <b>embudo</b> muestra en qué etapa va el concurso.</span></li><li class="num"><span class="n">2</span><span><b>Abrir votación</b> / <b>Cerrar votación</b>, siempre con confirmación. Una ronda sin propuestas no se puede abrir.</span></li><li class="num"><span class="n">3</span><span><b>Copiar link de votación</b> para compartirlo con los gerentes.</span></li><li><span>En <b>Propuestas</b> de la Ronda 1 usa «Agregar todas las propuestas activas» antes de abrirla.</span></li><li><span><b>Reabrir</b> una ronda cerrada permite que los gerentes cambien su voto: úsalo solo si es necesario.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · Resultados</p>
+  <h2>Resultados de una ronda</h2>
+  <p class="lead">Ranking con el promedio de cada propuesta. Durante la votación se actualiza solo; solo cuentan los votos enviados.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-09-resultados.jpg" alt=""><span class="marca" style="left:7.22%;top:31.49%">1</span><span class="marca" style="left:50%;top:95.63%">2</span><span class="marca" style="left:81.92%;top:25.26%">3</span></div></figure><ul class="acciones"><li class="num"><span class="n">1</span><span>Si hay <b>empate en el lugar de corte</b>, la app lo avisa para que decidas cuál pasa.</span></li><li class="num"><span class="n">2</span><span>La <b>línea de corte</b> separa las propuestas que pasan a la siguiente ronda.</span></li><li class="num"><span class="n">3</span><span>Con la ronda cerrada, <b>Pasar a la Ronda N</b> lleva a la selección final.</span></li><li><span>Haz clic en una propuesta para ver la calificación de cada gerente; <b>Exportar a Excel</b> descarga ranking y detalle.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · Pasar a la siguiente ronda</p>
+  <h2>Pasar a la siguiente ronda</h2>
+  <p class="lead">Viene preseleccionado el Top N según el ranking. Ajusta la selección si hay empate y confirma.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-10-avanzar.jpg" alt=""><span class="marca" style="left:7.22%;top:26.51%">1</span><span class="marca" style="left:8.68%;top:37.2%">2</span><span class="marca" style="left:78.84%;top:36.4%">3</span></div></figure><div class="dos-a"><figure class="captura"><div class="marco"><img src="capturas/admin-11-avanzar-confirmar.jpg" alt=""></div><figcaption>Resumen antes de confirmar.</figcaption></figure><ul class="acciones"><li class="num"><span class="n">1</span><span>El aviso de <b>empate</b> marca las propuestas empatadas.</span></li><li class="num"><span class="n">2</span><span>El contador indica si sobran o faltan propuestas respecto al Top N.</span></li><li class="num"><span class="n">3</span><span><b>Revisar y confirmar</b> muestra el resumen; al confirmar, la siguiente ronda queda lista para abrirse.</span></li><li><span>Mientras la siguiente ronda no se abra, puedes <b>Deshacer avance</b> desde los resultados.</span></li></ul></div></div>
+</section>
+<section class="hoja">
+  <p class="ante">Portal de admin · /admin/ganadores</p>
+  <h2>Ganadores</h2>
+  <p class="lead">Al cerrar la Ronda 3 aparecen los 3 ganadores con su logo, significado y autor.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-12-ganadores.jpg" alt=""><span class="marca" style="left:36.2%;top:34.02%">1</span><span class="marca" style="left:76.7%;top:18.86%">2</span></div></figure><ul class="acciones"><li class="num"><span class="n">1</span><span>El <b>1er lugar</b> va al centro, con oro; 2º y 3º con plata y bronce.</span></li><li class="num"><span class="n">2</span><span><b>Paquete para la agencia</b>: ZIP con los logos originales y un Excel con nombre, significado y autor.</span></li><li><span>Si hay empate entre lugares, primero elige el orden final y presiona <b>Confirmar ganadores</b>.</span></li><li><span>«Cambiar el orden de los ganadores» permite corregir la confirmación.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Modo reunión · /admin/reunion</p>
+  <h2>Modo reunión: galería</h2>
+  <p class="lead">Pantalla para proyectar en la reunión. Ábrela desde «Modo reunión» en el encabezado; presiona F para pantalla completa.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-13-reunion-galeria.jpg" alt=""><span class="marca abajo" style="left:17.21%;top:2%">1</span><span class="marca abajo" style="left:69.68%;top:2%">2</span></div></figure><div class="dos-a"><figure class="captura"><div class="marco"><img src="capturas/admin-14-reunion-propuesta.jpg" alt=""></div><figcaption>Una propuesta en grande; el autor está oculto.</figcaption></figure><ul class="acciones"><li class="num"><span class="n">1</span><span>Elige qué mostrar: todas las propuestas activas o las de una ronda; orden por folio o aleatorio.</span></li><li class="num"><span class="n">2</span><span><b>Votación</b> muestra el QR y el avance (solo si hay una ronda abierta).</span></li><li><span>En una propuesta: ← → para navegar, <b>A</b> para mostrar u ocultar el autor y Esc para volver.</span></li><li><span>Los controles se ocultan solos; el botón de luna o sol cambia entre tema oscuro y claro.</span></li></ul></div></div>
+</section>
+<section class="hoja">
+  <p class="ante">Modo reunión · Votación</p>
+  <h2>Modo reunión: votación en vivo</h2>
+  <p class="lead">Muestra el QR para que los gerentes voten desde su celular y el avance en tiempo real, sin calificaciones.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-15-reunion-votacion.jpg" alt=""><span class="marca" style="left:10.21%;top:25.02%">1</span><span class="marca" style="left:47.37%;top:24.84%">2</span></div></figure><ul class="acciones"><li class="num"><span class="n">1</span><span>El <b>QR</b> y el link corto llevan directo a la página de votación.</span></li><li class="num"><span class="n">2</span><span><b>«6 de 11 gerentes han votado»</b> se actualiza solo cada pocos segundos.</span></li><li><span>«Ya votaron» lista a quien envió su voto; «Faltan» incluye a quien va a medias (votando…).</span></li><li><span>Nunca se muestran calificaciones individuales.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Modo reunión · Resultados</p>
+  <h2>Modo reunión: resultados</h2>
+  <p class="lead">Proyecta el ranking de una ronda cerrada, resaltando las propuestas que pasan. No muestra calificaciones por gerente ni autores.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-16-reunion-resultados.jpg" alt=""><span class="marca" style="left:68.67%;top:22.09%">1</span><span class="marca" style="left:85.2%;top:23.42%">2</span></div></figure><ul class="acciones"><li class="num"><span class="n">1</span><span>Elige la ronda cerrada que quieres mostrar.</span></li><li class="num"><span class="n">2</span><span><b>Mostrar promedios</b> enciende o apaga los números (por defecto están ocultos).</span></li><li><span>En la ronda final, los lugares 1, 2 y 3 aparecen en oro, plata y bronce.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Modo reunión · Revelar ganadores</p>
+  <h2>Modo reunión: revelar ganadores</h2>
+  <p class="lead">El momento final. Se habilita cuando los ganadores están confirmados. Avanza con → o un clic; ← regresa.</p>
+  <div class="cuerpo"><figure class="captura"><div class="marco"><img src="capturas/admin-18-revelar-primer-lugar.jpg" alt=""></div></figure><div class="dos"><figure class="captura"><div class="marco"><img src="capturas/admin-17-revelar-portada.jpg" alt=""></div><figcaption>Portada.</figcaption></figure><figure class="captura"><div class="marco"><img src="capturas/admin-19-revelar-podio.jpg" alt=""></div><figcaption>Podio final.</figcaption></figure></div><ul class="acciones"><li><span>Orden de la revelación: portada → 3er lugar → 2º lugar → 1er lugar → podio.</span></li><li><span>El autor (participante, área y ciudad) aparece al revelar cada lugar.</span></li></ul></div>
+</section>
+<section class="hoja">
+  <p class="ante">Checklist</p>
+  <h2>Lista rápida para el día de la votación</h2>
+  <p class="lead">Úsala en cada ronda. Marca cada paso conforme avances.</p>
+  <div class="cuerpo">
+<div class="lista3">
+  <div class="bloque"><p class="cuando">Antes</p><h3>Preparar</h3><ul class="check">
+    <li>Todas las propuestas capturadas y revisadas (sin duplicados).</li>
+    <li>Las que no participan, descartadas.</li>
+    <li>Ronda 1: «Agregar todas las propuestas activas».</li>
+    <li>Probar el link de votación en tu celular.</li>
+    <li>Proyector listo: modo reunión, tema y pantalla completa (F).</li>
+  </ul></div>
+  <div class="bloque"><p class="cuando">Durante</p><h3>Votar</h3><ul class="check">
+    <li>Rondas → <b>Abrir votación</b>.</li>
+    <li>Compartir el QR (modo reunión → Votación) o «Copiar link de votación».</li>
+    <li>Seguir el avance «x de 11».</li>
+    <li>Recordar a quien aparece en «Faltan» o «votando…».</li>
+    <li>Cuando los 11 enviaron: <b>Cerrar votación</b>.</li>
+  </ul></div>
+  <div class="bloque"><p class="cuando">Después</p><h3>Cerrar</h3><ul class="check">
+    <li>Revisar resultados y resolver empates en el corte.</li>
+    <li><b>Exportar a Excel</b> como respaldo.</li>
+    <li><b>Pasar a la siguiente ronda</b> (Top 15 → Top 5).</li>
+    <li>Al final: <b>Confirmar ganadores</b> y descargar el paquete para la agencia.</li>
+    <li>En la reunión: <b>Revelar ganadores</b>.</li>
+  </ul></div>
+</div>
+<div class="nota" style="margin-top:6px"><b>Link de votación:</b> concurso-arclad.vercel.app · <b>Portal:</b> concurso-arclad.vercel.app/admin</div>
+</div>
+</section>
+</body>
+</html>

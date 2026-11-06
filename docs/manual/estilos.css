@@ -1,0 +1,231 @@
+/*
+ * Estilos de los manuales · Concurso Identidad
+ * Mismo sistema de diseño que la app (tokens de src/app/globals.css):
+ * Tinta, Esmeralda, Marfil, Arena, Pizarra y Oro · Fraunces + Manrope.
+ * Página carta; cada .hoja empieza en una página nueva.
+ */
+:root {
+  --tinta: #0f1b2d;
+  --tinta-suave: #16243a;
+  --esmeralda: #0e7c66;
+  --esmeralda-hover: #0b6553;
+  --esmeralda-suave: #e3f2ee;
+  --marfil: #f7f5f0;
+  --superficie: #ffffff;
+  --arena: #e6e1d8;
+  --pizarra: #5b6472;
+  --oro: #c8a24a;
+  --oro-suave: #f6efd9;
+  --oro-texto: #6b5318;
+  --f-titulo: "Fraunces", Georgia, "Times New Roman", serif;
+  --f-texto: "Manrope", "Helvetica Neue", Arial, sans-serif;
+}
+
+@page {
+  size: Letter;
+  margin: 0.62in 0.7in 0.72in;
+  @bottom-left {
+    content: "Concurso Identidad";
+    font: 600 8pt "Manrope", Arial, sans-serif;
+    color: #5b6472;
+  }
+  @bottom-right {
+    content: counter(page);
+    font: 700 8pt "Manrope", Arial, sans-serif;
+    color: #0e7c66;
+  }
+}
+@page portada {
+  margin: 0;
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0;
+  font-family: var(--f-texto);
+  font-size: 10.5pt;
+  line-height: 1.5;
+  color: var(--tinta);
+  background: var(--superficie);
+}
+h1, h2, h3 { font-family: var(--f-titulo); font-weight: 600; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.dominio { white-space: nowrap; }
+em.acento { font-style: italic; font-weight: 500; color: var(--esmeralda); }
+
+/* ------------------------------------------------------------------ portada */
+.portada {
+  page: portada;
+  height: 11in;
+  background: var(--tinta);
+  color: var(--marfil);
+  position: relative;
+  overflow: hidden;
+  padding: 0.9in 0.85in;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.portada .patron { position: absolute; inset: 0; opacity: 0.09; color: var(--marfil); }
+.portada .halo { position: absolute; right: -1.6in; bottom: -1.6in; width: 5in; height: 5in; border-radius: 50%; background: radial-gradient(circle, rgba(47, 181, 150, 0.35), transparent 70%); }
+.portada > * { position: relative; }
+.logo { display: inline-flex; align-items: center; gap: 12px; font-family: var(--f-titulo); font-weight: 600; font-size: 19pt; letter-spacing: -0.02em; }
+.logo em { font-style: italic; font-weight: 500; color: #2fb596; }
+.portada .ante { color: var(--oro); }
+.portada h1 { font-size: 48pt; line-height: 1.02; margin-top: 14px; }
+.portada h1 em { font-style: italic; font-weight: 500; color: #2fb596; }
+.portada .bajada { margin-top: 18px; max-width: 5.2in; font-size: 13pt; color: #c9d0da; }
+.portada .datos { display: flex; gap: 28px; font-size: 9.5pt; color: #a9b2bf; }
+.portada .datos b { display: block; color: var(--marfil); font-size: 11pt; }
+
+/* ------------------------------------------------------------------ hojas */
+.hoja { break-before: page; }
+.ante { font-size: 8pt; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--esmeralda); }
+.hoja > h2 { font-size: 26pt; line-height: 1.08; margin-top: 6px; }
+.lead { margin-top: 8px; font-size: 11.5pt; color: var(--pizarra); max-width: 6.3in; }
+.hoja .cuerpo { margin-top: 18px; display: grid; gap: 16px; }
+
+/* Capturas */
+.captura { margin: 0; }
+.marco {
+  position: relative;
+  border: 1px solid var(--arena);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 27, 45, 0.06), 0 8px 22px rgba(15, 27, 45, 0.1);
+  background: var(--marfil);
+}
+.marco img { display: block; width: 100%; height: auto; }
+.marca {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  margin: -24px 0 0 -24px; /* fuera de la esquina superior izquierda: no tapa lo que señala */
+  border-radius: 50%;
+  background: var(--esmeralda);
+  color: #fff;
+  font: 700 9pt/22px var(--f-texto);
+  text-align: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(15, 27, 45, 0.35);
+}
+.marca.abajo { margin-top: 6px; }      /* elemento pegado al borde superior */
+.marca.derecha { margin-left: 6px; }   /* elemento pegado al borde izquierdo */
+.captura figcaption { margin-top: 6px; font-size: 8.5pt; color: var(--pizarra); }
+
+/* Acciones */
+.acciones { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.acciones li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; align-items: start; }
+.acciones li::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin: 6px 0 0 6px;
+  border-radius: 50%;
+  background: var(--esmeralda);
+}
+.acciones li.num::before { display: none; }
+.acciones .n {
+  width: 19px; height: 19px; border-radius: 50%; background: var(--esmeralda); color: #fff;
+  font: 700 8pt/19px var(--f-texto); text-align: center; margin-top: 1px;
+}
+.acciones b { font-weight: 700; }
+.dos { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.dos-a { display: grid; grid-template-columns: 3.3in 1fr; gap: 20px; align-items: start; }
+.nota {
+  border: 1px solid var(--arena);
+  background: var(--marfil);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 9.5pt;
+  color: var(--pizarra);
+}
+.nota b { color: var(--tinta); }
+.nota.oro { background: var(--oro-suave); border-color: rgba(200, 162, 74, 0.45); color: var(--oro-texto); }
+.nota.oro b { color: var(--oro-texto); }
+
+/* ------------------------------------------------------------------ índice */
+.indice { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 2px; }
+.indice li { display: flex; align-items: baseline; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--arena); }
+.indice .t { font-family: var(--f-titulo); font-size: 13pt; font-weight: 600; }
+.indice .d { color: var(--pizarra); font-size: 9.5pt; }
+.indice .relleno { flex: 1; }
+.indice .p { font-weight: 700; color: var(--esmeralda); font-variant-numeric: tabular-nums; }
+.indice .grupo { padding-top: 12px; border: 0; font-size: 8pt; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--pizarra); }
+
+/* ------------------------------------------------------------------ embudo */
+.embudo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 22px; align-items: stretch; }
+.etapa {
+  position: relative;
+  border: 1px solid var(--arena);
+  border-left: 0;
+  padding: 16px 14px 14px 22px;
+  background: var(--superficie);
+}
+.etapa:first-child { border-left: 1px solid var(--arena); border-radius: 12px 0 0 12px; padding-left: 16px; }
+.etapa:last-child { border-radius: 0 12px 12px 0; background: var(--oro-suave); border-color: rgba(200, 162, 74, 0.5); }
+.etapa::after {
+  content: "";
+  position: absolute;
+  right: -11px; top: 50%;
+  width: 20px; height: 20px;
+  transform: translateY(-50%) rotate(45deg);
+  background: inherit;
+  border-top: 1px solid var(--arena);
+  border-right: 1px solid var(--arena);
+  z-index: 1;
+}
+.etapa:last-child::after { display: none; }
+.etapa .k { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--pizarra); }
+.etapa .cifra { font-family: var(--f-titulo); font-size: 30pt; font-weight: 600; line-height: 1; margin-top: 6px; color: var(--esmeralda); }
+.etapa:first-child .cifra { color: var(--tinta); }
+.etapa:last-child .cifra { color: var(--oro-texto); }
+.etapa .q { margin-top: 6px; font-size: 9pt; color: var(--pizarra); }
+.tabla { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 9.5pt; }
+.tabla th { text-align: left; font-size: 7.5pt; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pizarra); padding: 8px 10px; border-bottom: 1px solid var(--arena); }
+.tabla td { padding: 9px 10px; border-bottom: 1px solid var(--arena); vertical-align: top; }
+.tabla td:first-child { font-family: var(--f-titulo); font-weight: 600; font-size: 11pt; white-space: nowrap; }
+
+/* ------------------------------------------------------------------ lista rápida */
+.lista3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+.bloque { border: 1px solid var(--arena); border-radius: 12px; padding: 16px; background: var(--superficie); }
+.bloque h3 { font-size: 15pt; }
+.bloque .cuando { font-size: 8pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--esmeralda); }
+.check { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; font-size: 9.5pt; }
+.check li { position: relative; padding-left: 22px; }
+.check li::before { content: ""; position: absolute; left: 0; top: 3px; width: 12px; height: 12px; border: 1.5px solid var(--esmeralda); border-radius: 3px; }
+
+/* ------------------------------------------------------------------ guía (gerentes) */
+.pasos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+.paso { display: grid; gap: 10px; align-content: start; }
+.paso .cab { display: flex; gap: 10px; align-items: flex-start; }
+.paso .num {
+  flex: none; width: 28px; height: 28px; border-radius: 9px; background: var(--esmeralda); color: #fff;
+  font: 600 13pt/28px var(--f-titulo); text-align: center;
+}
+.paso h3 { font-size: 13pt; line-height: 1.2; }
+.paso p { font-size: 9pt; color: var(--pizarra); margin-top: 3px; }
+.cel .marco { border-radius: 16px; }
+.escala { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; }
+.escala div { border: 1px solid var(--arena); border-radius: 10px; text-align: center; padding: 8px 4px; background: var(--superficie); }
+.escala b { display: block; font-family: var(--f-titulo); font-size: 18pt; line-height: 1; color: var(--esmeralda); }
+.escala span { font-size: 8pt; color: var(--pizarra); }
+.criterios { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.criterios div { border-left: 3px solid var(--esmeralda); padding: 4px 0 4px 12px; }
+.criterios b { font-family: var(--f-titulo); font-size: 11.5pt; font-weight: 600; display: block; }
+.criterios span { font-size: 9pt; color: var(--pizarra); }
+.faq { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin-top: 8px; }
+.faq h3 { font-size: 11.5pt; }
+.faq p { font-size: 9.5pt; color: var(--pizarra); margin-top: 3px; }
+.link {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 14px; padding: 10px 16px; border-radius: 12px;
+  background: var(--esmeralda-suave); color: var(--esmeralda-hover); font-family: var(--f-titulo); font-weight: 600; font-size: 16pt;
+}
+.seccion { margin-top: 16px; }
+.seccion > h3 { font-size: 15pt; }
+.estados { display: grid; grid-template-columns: 0.8in 1fr 0.8in 1fr; gap: 12px 14px; align-items: center; margin-top: 10px; font-size: 9pt; color: var(--pizarra); }
+.estados .marco { border-radius: 10px; }
+.estados b { color: var(--tinta); }
