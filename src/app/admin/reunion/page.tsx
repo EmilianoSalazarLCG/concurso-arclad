@@ -1,27 +1,26 @@
-import { headers } from "next/headers";
 import QRCode from "qrcode";
 import { ModoReunion } from "@/components/reunion/modo-reunion";
 import { exigirAdmin } from "@/lib/datos/auth";
 import { propuestasReunion, rondasReunion } from "@/lib/datos/reunion";
+import { linkVotacion } from "@/lib/link-votacion";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Modo reunión · Concurso identidad" };
 
 export default async function ReunionPage() {
   await exigirAdmin();
-  const [propuestas, rondas, h] = await Promise.all([propuestasReunion("activas"), rondasReunion(), headers()]);
+  const [propuestas, rondas] = await Promise.all([propuestasReunion("activas"), rondasReunion()]);
 
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const protocolo = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  const urlVotar = `${protocolo}://${host}/votar`;
-  const qrSvg = await QRCode.toString(urlVotar, { type: "svg", margin: 1, errorCorrectionLevel: "M" });
+  const link = await linkVotacion();
+  // El QR apunta al link corto (la raíz redirige a /votar).
+  const qrSvg = await QRCode.toString(link.url, { type: "svg", margin: 1, errorCorrectionLevel: "M" });
 
   return (
     <ModoReunion
       propuestasIniciales={propuestas}
       rondas={rondas}
-      urlVotar={urlVotar}
-      linkCorto={`${host}/votar`}
+      urlVotar={link.url}
+      linkCorto={link.corto}
       qrSvg={qrSvg}
     />
   );

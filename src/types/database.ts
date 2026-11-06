@@ -115,6 +115,52 @@ export type Database = {
           },
         ]
       }
+      calificaciones_enviadas: {
+        Row: {
+          criterio_id: string
+          propuesta_id: string
+          puntaje: number
+          ronda_id: string
+          votante_id: string
+        }
+        Insert: {
+          criterio_id: string
+          propuesta_id: string
+          puntaje: number
+          ronda_id: string
+          votante_id: string
+        }
+        Update: {
+          criterio_id?: string
+          propuesta_id?: string
+          puntaje?: number
+          ronda_id?: string
+          votante_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calificaciones_enviadas_criterio_id_fkey"
+            columns: ["criterio_id"]
+            isOneToOne: false
+            referencedRelation: "criterios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calificaciones_enviadas_ronda_propuesta_fkey"
+            columns: ["ronda_id", "propuesta_id"]
+            isOneToOne: false
+            referencedRelation: "resultados_ronda"
+            referencedColumns: ["ronda_id", "propuesta_id"]
+          },
+          {
+            foreignKeyName: "calificaciones_enviadas_ronda_propuesta_fkey"
+            columns: ["ronda_id", "propuesta_id"]
+            isOneToOne: false
+            referencedRelation: "ronda_propuestas"
+            referencedColumns: ["ronda_id", "propuesta_id"]
+          },
+        ]
+      }
       criterios: {
         Row: {
           activo: boolean
@@ -269,6 +315,35 @@ export type Database = {
         }
         Relationships: []
       }
+      votos_enviados: {
+        Row: {
+          calificaciones: number
+          enviado_at: string
+          ronda_id: string
+          votante_id: string
+        }
+        Insert: {
+          calificaciones: number
+          enviado_at?: string
+          ronda_id: string
+          votante_id: string
+        }
+        Update: {
+          calificaciones?: number
+          enviado_at?: string
+          ronda_id?: string
+          votante_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votos_enviados_ronda_id_fkey"
+            columns: ["ronda_id"]
+            isOneToOne: false
+            referencedRelation: "rondas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       propuestas_admin: {
@@ -355,6 +430,11 @@ export type Database = {
           participante_nombre: string
           similitud: number
         }[]
+      }
+      calificaciones_esperadas: { Args: { p_ronda: string }; Returns: number }
+      enviar_voto: {
+        Args: { p_ronda: string; p_votante: string }
+        Returns: string
       }
       es_admin: { Args: never; Returns: boolean }
       reiniciar_folio_si_vacio: { Args: never; Returns: boolean }

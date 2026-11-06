@@ -26,6 +26,7 @@ export async function abrirRonda(rondaId: string): Promise<Resultado<Ronda>> {
     .single();
   if (error) {
     if (error.code === "23505") return falla("Ya hay otra ronda abierta. Ciérrala primero.");
+    if (error.code === "23514") return falla(error.message);
     return falla(`No se pudo abrir la ronda: ${error.message}`);
   }
   return ok(data);
@@ -59,8 +60,20 @@ export async function agregarPropuestasARonda(
       { onConflict: "ronda_id,propuesta_id", ignoreDuplicates: true },
     )
     .select("propuesta_id");
-  if (error) return falla(`No se pudieron agregar las propuestas: ${error.message}`);
+  if (error) {
+    if (error.code === "23514") return falla(error.message);
+    return falla(`No se pudieron agregar las propuestas: ${error.message}`);
+  }
   return ok(data.length);
+}
+
+/** Agrega a la ronda todas las propuestas activas que aún no estén. */
+export async function agregarTodasLasActivas(rondaId: string): Promise<Resultado<number>> {
+  await requerirAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("propuestas").select("id").eq("estado", "activa");
+  if (error) return falla(`No se pudieron leer las propuestas: ${error.message}`);
+  return agregarPropuestasARonda(rondaId, data.map((p) => p.id));
 }
 
 /** Quita una propuesta de una ronda (borra también sus calificaciones en esa ronda). */
@@ -72,7 +85,10 @@ export async function quitarPropuestaDeRonda(rondaId: string, propuestaId: strin
     .delete()
     .eq("ronda_id", rondaId)
     .eq("propuesta_id", propuestaId);
-  if (error) return falla(`No se pudo quitar la propuesta: ${error.message}`);
+  if (error) {
+    if (error.code === "23514") return falla(error.message);
+    return falla(`No se pudo quitar la propuesta: ${error.message}`);
+  }
   return ok(undefined);
 }
 
@@ -162,4 +178,35 @@ export async function criteriosActivos(): Promise<Criterio[]> {
     .order("orden");
   if (error) throw new Error(`No se pudieron cargar los criterios: ${error.message}`);
   return data;
+}
+
+// ---------------------------------------------------------------- Resumen para /admin/rondas
+
+export type ResumenRonda = Ronda & { propuestas: number; enviados: number };
+
+/** Rondas con nº de propuestas activas asignadas y nº de gerentes que enviaron su voto. */
+export async function resumenRondas(): Promise<ResumenRonda[]> {
+  await requerirAdmin();
+  const supabase = await createClient();
+  const [rondas, asignadas, enviados] = await Promise.all([
+    supabase.from("rondas").select("*").order("numero"),
+    supabase.from("ronda_propuestas").select("ronda_id, propuestas!inner(estado)").eq("propuestas.estado", "activa"),
+    supabase.from("votos_enviados").select("ronda_id"),
+  ]);
+  if (rondas.error || asignadas.error || enviados.error) throw new Error("No se pudieron cargar las rondas.");
+  const contar = (xs: { ronda_id: string }[], id: string) => xs.filter((x) => x.ronda_id === id).length;
+  return rondas.data.map((r) => ({ ...r, propuestas: contar(asignadas.data, r.id), enviados: contar(enviados.data, r.id) }));
+}
+
+/** Propuestas activas que todavía no están en la ronda (para agregarlas). */
+export async function propuestasDisponibles(rondaId: string): Promise<Pick<Propuesta, "id" | "folio" | "nombre_propuesto" | "participante_nombre">[]> {
+  await requerirAdmin();
+  const supabase = await createClient();
+  const [todas, asignadas] = await Promise.all([
+    supabase.from("propuestas").select("id, folio, nombre_propuesto, participante_nombre").eq("estado", "activa").order("folio"),
+    supabase.from("ronda_propuestas").select("propuesta_id").eq("ronda_id", rondaId),
+  ]);
+  if (todas.error || asignadas.error) throw new Error("No se pudieron cargar las propuestas.");
+  const ya = new Set(asignadas.data.map((a) => a.propuesta_id));
+  return todas.data.filter((p) => !ya.has(p.id));
 }

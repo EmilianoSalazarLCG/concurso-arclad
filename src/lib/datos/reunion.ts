@@ -69,13 +69,12 @@ export type AvanceReunion = {
   totalVotantes: number;
   completos: number;
   totalPropuestas: number;
-  votantes: { id: string; nombre: string; estado: EstadoGerente; propuestasCompletas: number }[];
+  votantes: { id: string; nombre: string; estado: EstadoGerente }[];
 };
 
 /**
- * Avance de la votación de la ronda abierta, SIN calificaciones: solo quién completó
- * (calificó todas las propuestas activas de la ronda en todos los criterios activos),
- * quién va a medias y quién no ha empezado.
+ * Avance de la votación de la ronda abierta, SIN calificaciones:
+ * "completo" = envió su voto; "en-proceso" = tiene avance sin enviar; "pendiente" = no ha empezado.
  */
 export async function avanceVotacionReunion(): Promise<AvanceReunion | null> {
   await requerirAdmin();
@@ -83,49 +82,26 @@ export async function avanceVotacionReunion(): Promise<AvanceReunion | null> {
   if (!ronda) return null;
 
   const db = createAdminClient();
-  const [propuestas, { data: criterios, error: eC }] = await Promise.all([
+  const [propuestas, enviados, conAvance] = await Promise.all([
     propuestasParaVotar(ronda.id),
-    db.from("criterios").select("id").eq("activo", true),
+    db.from("votos_enviados").select("votante_id").eq("ronda_id", ronda.id),
+    db.from("calificaciones").select("votante_id").eq("ronda_id", ronda.id).limit(5000),
   ]);
-  if (eC) throw new Error("No se pudieron cargar los criterios.");
+  if (enviados.error || conAvance.error) throw new Error("No se pudo cargar el avance.");
+  const enviaron = new Set(enviados.data.map((v) => v.votante_id));
+  const empezaron = new Set(conAvance.data.map((v) => v.votante_id));
 
-  const idsPropuestas = new Set(propuestas.map((p) => p.id));
-  const idsCriterios = new Set((criterios ?? []).map((c) => c.id));
-  // votante → propuesta → nº de criterios calificados
-  const conteo = new Map<string, Map<string, number>>();
-  for (let desde = 0; ; desde += 1000) {
-    const { data, error } = await db
-      .from("calificaciones")
-      .select("votante_id, propuesta_id, criterio_id")
-      .eq("ronda_id", ronda.id)
-      .range(desde, desde + 999);
-    if (error) throw new Error("No se pudo cargar el avance.");
-    for (const c of data) {
-      if (!idsPropuestas.has(c.propuesta_id) || !idsCriterios.has(c.criterio_id)) continue;
-      const porPropuesta = conteo.get(c.votante_id) ?? new Map<string, number>();
-      porPropuesta.set(c.propuesta_id, (porPropuesta.get(c.propuesta_id) ?? 0) + 1);
-      conteo.set(c.votante_id, porPropuesta);
-    }
-    if (data.length < 1000) break;
-  }
-
-  const votantes = (await obtenerVotantes()).map((v) => {
-    const porPropuesta = conteo.get(v.id);
-    const propuestasCompletas = [...(porPropuesta?.values() ?? [])].filter((n) => n >= idsCriterios.size).length;
-    const estado: EstadoGerente =
-      idsPropuestas.size > 0 && propuestasCompletas === idsPropuestas.size
-        ? "completo"
-        : porPropuesta?.size
-          ? "en-proceso"
-          : "pendiente";
-    return { id: v.id, nombre: v.nombre, estado, propuestasCompletas };
-  });
+  const votantes = (await obtenerVotantes()).map((v) => ({
+    id: v.id,
+    nombre: v.nombre,
+    estado: (enviaron.has(v.id) ? "completo" : empezaron.has(v.id) ? "en-proceso" : "pendiente") as EstadoGerente,
+  }));
 
   return {
     ronda: { numero: ronda.numero, nombre: ronda.nombre },
     totalVotantes: votantes.length,
-    completos: votantes.filter((v) => v.estado === "completo").length,
-    totalPropuestas: idsPropuestas.size,
+    completos: enviaron.size,
+    totalPropuestas: propuestas.length,
     votantes,
   };
 }

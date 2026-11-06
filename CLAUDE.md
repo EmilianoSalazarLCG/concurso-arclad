@@ -11,6 +11,29 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
   El dominio `concurso-arclad.vercel.app` se mantiene (decisión del usuario, 2026-11-06),
   aunque aparezca en el QR/link de votación; no volver a proponer cambiarlo.
 
+## Dos partes separadas
+1. **Portal de admin (`/admin`)**: con login, solo para People & Culture. Captura, historial,
+   rondas y modo reunión.
+2. **Página de votación (`/votar`)**: SIN login, para los 11 gerentes. No tienen usuario ni
+   contraseña ni entran al portal: reciben el link, eligen su nombre y califican.
+- El link (la raíz del sitio, que redirige a `/votar`) se comparte por QR en el modo reunión,
+  correo, Teams o WhatsApp: `/votar` debe funcionar igual de bien en celular y computadora.
+- `/votar` nunca muestra enlaces al portal de admin, resultados, calificaciones de otros ni
+  datos del autor.
+
+## Decisiones de votación
+- Votación ANÓNIMA por defecto (`MOSTRAR_AUTOR_EN_VOTACION = false` en `src/config/votacion.ts`):
+  los gerentes ven folio, logo, nombre propuesto y significado; NO participante, área ni ciudad.
+- Paso explícito "Enviar mi voto". Las calificaciones se guardan solas como avance
+  (`calificaciones`), pero solo cuenta lo ENVIADO: al enviar se copia una "foto" a
+  `calificaciones_enviadas` y se registra en `votos_enviados`. Puede corregir y volver a enviar
+  mientras la ronda esté abierta; lo último enviado reemplaza lo anterior (si corrige y no
+  re-envía, sigue contando lo enviado antes).
+- Solo se puede enviar con TODAS las propuestas activas de la ronda calificadas en TODOS los
+  criterios activos (validado en servidor, en `enviar_voto()` y en un trigger).
+- Modo reunión: "votó" = envió su voto; con avance sin enviar = "(votando…)".
+- Resultados (`resultados_ronda`) usan solo `calificaciones_enviadas`.
+
 ## Contexto del proyecto
 - Concurso donde colaboradores proponen nombre + logo para un proyecto.
 - Los ADMINISTRADORES (equipo de People & Culture) capturan las propuestas; los
@@ -163,10 +186,24 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
   "votó" = calificó todas las propuestas activas de la ronda en todos los criterios activos.
 - `/votar` es un marcador público hasta la Fase 6.
 
+## Votación y rondas (Fase 6)
+- `/` redirige a `/votar`. "Copiar link de votación" (encabezado del panel y `/admin/rondas`)
+  copia la raíz del sitio (`src/lib/link-votacion.ts`); el QR del modo reunión apunta ahí.
+- `/votar` (`src/components/votar/votacion.tsx`): elegir nombre (se recuerda en el dispositivo),
+  una propuesta por pantalla, orden aleatorio estable por gerente y ronda, guardado automático
+  con cola de reintentos persistida en localStorage, retoma en otro dispositivo (primera
+  pendiente), revisar/enviar, corregir. Acciones públicas en `src/app/votar/acciones.ts` →
+  `src/lib/datos/votacion.ts` (service role; solo devuelve lo necesario).
+- `/admin/rondas` y `/admin/rondas/[id]`: abrir/cerrar/reabrir con confirmación, agregar todas
+  las activas (ronda 1) o individuales. Reglas en la base: propuestas de una ronda solo cambian
+  en `pendiente`; no se abre una ronda sin propuestas; una sola abierta.
+- "Conexión OK" vive ahora en `/admin/mantenimiento` (Estado del sistema).
+
 ## Fases
 - Fase 1 (proyecto base): scaffolding, clientes Supabase, página de verificación, repo y deploy.
 - Fase 2 (base de datos): migraciones, RLS, Storage, tipos y capa de datos. ✅
 - Fase 3 (login y captura): login de admins, panel, formulario de captura rápida. ✅
 - Fase 4 (gestión): lista, detalle, edición, descartar/restaurar, exportar, mantenimiento. ✅
 - Fase 5 (modo reunión): galería, detalle, presentación y panel de votación. ✅
-- Siguiente fase: página de votación de gerentes (/votar) y cierre de rondas.
+- Fase 6 (votación): /votar para gerentes, envío explícito, gestión de rondas. ✅
+- Siguiente fase: resultados y paso de rondas (Top N a la siguiente).
