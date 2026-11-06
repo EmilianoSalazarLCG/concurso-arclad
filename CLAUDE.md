@@ -8,6 +8,8 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - REGLA: nada de lo que se ve en la aplicación (textos, títulos de pestaña, encabezados,
   nombres de archivos exportados, metadatos) puede mencionar "ARclad" ni "London Consulting".
   El nombre de la carpeta, del paquete, del repo y del proyecto Supabase son internos.
+  El dominio `concurso-arclad.vercel.app` se mantiene (decisión del usuario, 2026-11-06),
+  aunque aparezca en el QR/link de votación; no volver a proponer cambiarlo.
 
 ## Contexto del proyecto
 - Concurso donde colaboradores proponen nombre + logo para un proyecto.
