@@ -1,10 +1,13 @@
 @AGENTS.md
 
-# Concurso ARclad
+# Concurso identidad
 
-Aplicación web para gestionar un concurso interno de naming y logo para un proyecto del cliente ARclad.
+Aplicación web para gestionar un concurso interno de naming y logo para un proyecto de un cliente (ver regla de nombre abajo).
 - Nombre del paquete: `concurso-arclad`
-- Nombre visible: **Concurso ARclad**
+- Nombre visible: **Concurso identidad**
+- REGLA: nada de lo que se ve en la aplicación (textos, títulos de pestaña, encabezados,
+  nombres de archivos exportados, metadatos) puede mencionar "ARclad" ni "London Consulting".
+  El nombre de la carpeta, del paquete, del repo y del proyecto Supabase son internos.
 
 ## Contexto del proyecto
 - Concurso donde colaboradores proponen nombre + logo para un proyecto.
@@ -39,7 +42,7 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
   sans-serif (Inter), fondo claro, acento verde, tarjetas con bordes suaves.
 - Todos los colores, radios y fuentes son variables en `:root` de `src/app/globals.css`
   (tokens de Tailwind: `primary`, `accent`, `advertencia`, `lienzo-logo`, etc.). Para
-  adaptar a la marca ARclad se cambian ahí; los componentes no usan colores fijos.
+  adaptar a la marca del cliente se cambian ahí; los componentes no usan colores fijos.
 - Solo tema claro. Responsive (la captura se hace principalmente en computadora).
 - Tarjeta de propuesta reutilizable: `src/components/propuestas/tarjeta-propuesta.tsx`
   (vista previa, galería y modo reunión).

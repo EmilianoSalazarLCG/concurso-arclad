@@ -21,7 +21,7 @@ const fecha = new Intl.DateTimeFormat("es-MX", {
 export async function generateMetadata({ params }: PageProps<"/admin/propuestas/[id]">) {
   await exigirAdmin();
   const p = await obtenerPropuestaGestion((await params).id);
-  return { title: p ? `${formatearFolio(p.folio)} · ${p.nombre_propuesto} · Concurso ARclad` : "Propuesta" };
+  return { title: p ? `${formatearFolio(p.folio)} · ${p.nombre_propuesto} · Concurso identidad` : "Propuesta" };
 }
 
 export default async function DetallePropuestaPage({ params }: PageProps<"/admin/propuestas/[id]">) {

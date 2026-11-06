@@ -8,8 +8,8 @@ const titulos = Source_Serif_4({ variable: "--font-titulos", subsets: ["latin"] 
 const mono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Concurso ARclad",
-  description: "Concurso interno de naming y logo — ARclad",
+  title: "Concurso identidad",
+  description: "Concurso interno de naming y logo",
   robots: { index: false, follow: false },
 };
 

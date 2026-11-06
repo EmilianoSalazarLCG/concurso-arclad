@@ -4,7 +4,7 @@ import { FormularioLogin } from "./formulario-login";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Iniciar sesión · Concurso ARclad" };
+export const metadata = { title: "Iniciar sesión · Concurso identidad" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/admin/login">) {
   if (await obtenerAdminActual()) redirect("/admin");
@@ -20,7 +20,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/admin/logi
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <p className="text-xs font-medium tracking-[0.2em] text-primary uppercase">People &amp; Culture</p>
-          <h1 className="mt-2 text-3xl font-semibold">Concurso ARclad</h1>
+          <h1 className="mt-2 text-3xl font-semibold">Concurso identidad</h1>
           <p className="mt-2 text-sm text-muted-foreground">Panel de administración</p>
         </div>
         <FormularioLogin

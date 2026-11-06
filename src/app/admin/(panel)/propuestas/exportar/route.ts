@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   const filas = await todasPropuestasFiltradas(leerFiltros(request.nextUrl.searchParams));
 
   const libro = new ExcelJS.Workbook();
-  libro.creator = "Concurso ARclad";
+  libro.creator = "Concurso identidad";
   libro.created = new Date();
   const hoja = libro.addWorksheet("Propuestas", { views: [{ state: "frozen", ySplit: 1 }] });
   const formatoFecha = "dd/mm/yyyy hh:mm";
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
   }
 
   const buffer = await libro.xlsx.writeBuffer();
-  const nombre = `propuestas-concurso-arclad-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const nombre = `propuestas-concurso-identidad-${new Date().toISOString().slice(0, 10)}.xlsx`;
   return new NextResponse(buffer as ArrayBuffer, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

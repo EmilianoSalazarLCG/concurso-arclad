@@ -40,7 +40,7 @@ export default async function Home() {
     <main className="flex flex-1 items-center justify-center p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Concurso ARclad</CardTitle>
+          <CardTitle className="text-2xl">Concurso identidad</CardTitle>
           <CardDescription>Estado del proyecto base</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center gap-3">

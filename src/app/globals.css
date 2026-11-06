@@ -3,9 +3,9 @@
 @import "shadcn/tailwind.css";
 
 /*
- * Tema visual de Concurso ARclad.
+ * Tema visual de Concurso identidad.
  * Todos los colores, radios y fuentes son variables: para adaptar a la marca
- * ARclad basta con cambiar los valores en :root (no hay colores fijos en componentes).
+ * la marca del cliente basta con cambiar los valores en :root (no hay colores fijos en componentes).
  * La app usa solo tema claro.
  */
 

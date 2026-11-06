@@ -5,7 +5,7 @@ import { exigirAdmin } from "@/lib/datos/auth";
 import { contarPropuestas } from "@/lib/datos/propuestas";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Panel · Concurso ARclad" };
+export const metadata = { title: "Panel · Concurso identidad" };
 
 export default async function PanelPage() {
   const admin = await exigirAdmin();

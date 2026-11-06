@@ -1,6 +1,6 @@
-# Concurso ARclad
+# Concurso identidad
 
-Aplicación para gestionar el concurso interno de naming y logo del proyecto ARclad.
+Aplicación para gestionar el concurso interno de naming y logo del proyecto del cliente.
 Contexto completo y reglas del proyecto en [CLAUDE.md](CLAUDE.md).
 
 ## Desarrollo local

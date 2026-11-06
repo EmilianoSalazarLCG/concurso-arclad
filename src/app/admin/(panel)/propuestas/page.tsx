@@ -12,7 +12,7 @@ import { POR_PAGINA, filtrosAQuery, leerFiltros } from "@/lib/validacion/filtros
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Propuestas · Concurso ARclad" };
+export const metadata = { title: "Propuestas · Concurso identidad" };
 
 export default async function PropuestasPage({ searchParams }: PageProps<"/admin/propuestas">) {
   const admin = await exigirAdmin();

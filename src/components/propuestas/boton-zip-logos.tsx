@@ -44,7 +44,7 @@ export function BotonZipLogos({ query }: { query: string }) {
       );
       const enlace = document.createElement("a");
       enlace.href = URL.createObjectURL(new Blob([datos as BlobPart], { type: "application/zip" }));
-      enlace.download = `logos-concurso-arclad-${new Date().toISOString().slice(0, 10)}.zip`;
+      enlace.download = `logos-concurso-identidad-${new Date().toISOString().slice(0, 10)}.zip`;
       enlace.click();
       setTimeout(() => URL.revokeObjectURL(enlace.href), 10_000);
       toast.success(`ZIP con ${r.data.length} logo${r.data.length === 1 ? "" : "s"} listo.`);

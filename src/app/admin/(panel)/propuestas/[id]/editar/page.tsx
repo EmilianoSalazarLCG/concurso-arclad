@@ -8,7 +8,7 @@ import { obtenerPropuesta, valoresAutocompletar } from "@/lib/datos/propuestas";
 import { formatearFolio } from "@/lib/datos/tipos";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Editar propuesta · Concurso ARclad" };
+export const metadata = { title: "Editar propuesta · Concurso identidad" };
 
 export default async function EditarPropuestaPage({ params }: PageProps<"/admin/propuestas/[id]/editar">) {
   await exigirAdmin();

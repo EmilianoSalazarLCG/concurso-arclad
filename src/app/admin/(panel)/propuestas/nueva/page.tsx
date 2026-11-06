@@ -3,7 +3,7 @@ import { exigirAdmin } from "@/lib/datos/auth";
 import { valoresAutocompletar } from "@/lib/datos/propuestas";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Capturar propuesta · Concurso ARclad" };
+export const metadata = { title: "Capturar propuesta · Concurso identidad" };
 
 export default async function NuevaPropuestaPage() {
   await exigirAdmin();

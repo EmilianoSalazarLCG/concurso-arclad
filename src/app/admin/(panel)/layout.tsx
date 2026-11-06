@@ -15,7 +15,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
       <header className="sticky top-0 z-30 border-b bg-encabezado/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
           <Link href="/admin" className="font-heading text-lg font-semibold whitespace-nowrap">
-            Concurso <span className="text-primary">ARclad</span>
+            Concurso <span className="text-primary">identidad</span>
           </Link>
           <div className="hidden sm:block">
             <Navegacion />
