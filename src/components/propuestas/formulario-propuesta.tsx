@@ -143,7 +143,6 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
     if (errLogo) e.logo = errLogo;
     setErrores(e);
     if (Object.keys(e).length) {
-      setErrorGeneral("Revisa los campos marcados.");
       enfocarPrimerError(e);
       return;
     }
@@ -325,9 +324,9 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
           />
         </Campo>
 
-        {errorGeneral && (
+        {(errorGeneral || Object.keys(errores).length > 0) && (
           <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="error-general">
-            {errorGeneral}
+            {errorGeneral ?? "Revisa los campos marcados."}
           </p>
         )}
 
