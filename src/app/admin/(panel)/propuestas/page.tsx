@@ -1,29 +1,48 @@
 import Link from "next/link";
-import { PlusIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { cookies } from "next/headers";
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from "lucide-react";
+import { BarraFiltros } from "@/components/propuestas/barra-filtros";
+import { ListaPropuestas, type Vista } from "@/components/propuestas/lista-propuestas";
 import { buttonVariants } from "@/components/ui/button";
 import { exigirAdmin } from "@/lib/datos/auth";
-import { listarPropuestas } from "@/lib/datos/propuestas";
-import { formatearFolio } from "@/lib/datos/tipos";
+import { listarPropuestasGestion } from "@/lib/datos/gestion";
+import { urlsFirmadasLogos } from "@/lib/datos/logos";
+import { contarPropuestas, valoresAutocompletar } from "@/lib/datos/propuestas";
+import { POR_PAGINA, filtrosAQuery, leerFiltros } from "@/lib/validacion/filtros";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Propuestas · Concurso ARclad" };
 
-const fecha = new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Mexico_City" });
+export default async function PropuestasPage({ searchParams }: PageProps<"/admin/propuestas">) {
+  const admin = await exigirAdmin();
+  const filtros = leerFiltros(await searchParams);
 
-/** Lista simple. La lista completa (filtros, edición, galería) se construye en la Fase 4. */
-export default async function PropuestasPage() {
-  await exigirAdmin();
-  const propuestas = await listarPropuestas();
+  const [{ filas, total, paginas }, contadores, { areas, ciudades }, almacen] = await Promise.all([
+    listarPropuestasGestion(filtros),
+    contarPropuestas(),
+    valoresAutocompletar(),
+    cookies(),
+  ]);
+  const logos = await urlsFirmadasLogos(filas.map((p) => p.logo_path));
+
+  const cookieVista = `vista-propuestas-${admin.user_id.slice(0, 8)}`;
+  const vista: Vista = almacen.get(cookieVista)?.value === "tarjetas" ? "tarjetas" : "tabla";
+
+  const pagina = Math.min(filtros.pagina, paginas);
+  const desde = total === 0 ? 0 : (pagina - 1) * POR_PAGINA + 1;
+  const hasta = Math.min(pagina * POR_PAGINA, total);
+  const enlacePagina = (n: number) => {
+    const q = filtrosAQuery(filtros, { pagina: n });
+    return q ? `/admin/propuestas?${q}` : "/admin/propuestas";
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold">Propuestas</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {propuestas.length} capturada{propuestas.length === 1 ? "" : "s"}. La vista completa llega en la siguiente fase.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">Historial completo (solo administradores).</p>
         </div>
         <Link href="/admin/propuestas/nueva" className={buttonVariants({ className: "h-9" })}>
           <PlusIcon data-icon="inline-start" />
@@ -31,45 +50,51 @@ export default async function PropuestasPage() {
         </Link>
       </div>
 
-      {propuestas.length === 0 ? (
-        <div className="rounded-xl border border-dashed bg-card p-10 text-center text-muted-foreground">
-          Aún no hay propuestas capturadas.
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/50 text-left text-xs text-muted-foreground uppercase">
-              <tr>
-                <th className="px-4 py-3 font-medium">Folio</th>
-                <th className="px-4 py-3 font-medium">Nombre propuesto</th>
-                <th className="px-4 py-3 font-medium">Persona</th>
-                <th className="hidden px-4 py-3 font-medium md:table-cell">Área · Ciudad</th>
-                <th className="hidden px-4 py-3 font-medium lg:table-cell">Capturada</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {propuestas.map((p) => (
-                <tr key={p.id} data-testid="fila-propuesta">
-                  <td className="px-4 py-3 font-mono tabular-nums">{formatearFolio(p.folio)}</td>
-                  <td className="px-4 py-3 font-medium">{p.nombre_propuesto}</td>
-                  <td className="px-4 py-3">{p.participante_nombre}</td>
-                  <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                    {p.area} · {p.ciudad}
-                  </td>
-                  <td className="hidden px-4 py-3 text-muted-foreground lg:table-cell">
-                    {fecha.format(new Date(p.created_at))}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={p.estado === "activa" ? "secondary" : "outline"}>
-                      {p.estado === "activa" ? "Activa" : "Descartada"}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <dl className="grid grid-cols-3 gap-3 sm:max-w-lg" data-testid="contadores">
+        {(
+          [
+            ["Activas", contadores.activas, "text-primary"],
+            ["Descartadas", contadores.descartadas, "text-destructive"],
+            ["Total", contadores.activas + contadores.descartadas, "text-foreground"],
+          ] as const
+        ).map(([etiqueta, n, color]) => (
+          <div key={etiqueta} className="rounded-xl border bg-card px-4 py-3 shadow-sm">
+            <dt className="text-xs text-muted-foreground">{etiqueta}</dt>
+            <dd className={cn("font-heading text-2xl font-semibold tabular-nums", color)} data-testid={`contador-${etiqueta.toLowerCase()}`}>
+              {n}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <BarraFiltros key={filtros.q} filtros={filtros} areas={areas} ciudades={ciudades} />
+
+      <p className="text-sm text-muted-foreground" data-testid="resumen-resultados">
+        {total === 0 ? "Sin resultados con estos filtros." : `Mostrando ${desde}–${hasta} de ${total}`}
+      </p>
+
+      {filas.length > 0 && <ListaPropuestas filas={filas} logos={logos} vistaInicial={vista} cookieVista={cookieVista} />}
+
+      {paginas > 1 && (
+        <nav aria-label="Paginación" className="flex items-center justify-center gap-3">
+          <Link
+            href={enlacePagina(pagina - 1)}
+            aria-disabled={pagina <= 1}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), pagina <= 1 && "pointer-events-none opacity-50")}
+          >
+            <ChevronLeftIcon data-icon="inline-start" /> Anterior
+          </Link>
+          <span className="text-sm text-muted-foreground">
+            Página {pagina} de {paginas}
+          </span>
+          <Link
+            href={enlacePagina(pagina + 1)}
+            aria-disabled={pagina >= paginas}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), pagina >= paginas && "pointer-events-none opacity-50")}
+          >
+            Siguiente <ChevronRightIcon data-icon="inline-end" />
+          </Link>
+        </nav>
       )}
     </div>
   );

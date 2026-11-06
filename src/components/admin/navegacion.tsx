@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const ENLACES = [
   { href: "/admin/propuestas/nueva", etiqueta: "Capturar propuesta" },
   { href: "/admin/propuestas", etiqueta: "Propuestas" },
+  { href: "/admin/mantenimiento", etiqueta: "Mantenimiento" },
 ] as const;
 
 export function Navegacion() {

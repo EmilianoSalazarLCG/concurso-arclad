@@ -19,20 +19,33 @@ export function TarjetaPropuesta({
   datos,
   className,
   vistaPrevia = false,
+  descartada = false,
 }: {
   datos: DatosTarjeta;
   className?: string;
   vistaPrevia?: boolean;
+  /** Marca visual para propuestas descartadas (solo en vistas de admin). */
+  descartada?: boolean;
 }) {
   const { folio, nombrePropuesto, significado, participante, area, ciudad, logoUrl } = datos;
   const meta = [area, ciudad].filter(Boolean).join(" · ");
 
   return (
     <article className={cn("overflow-hidden rounded-xl border bg-card shadow-sm", className)}>
-      <div className="relative flex aspect-[4/3] items-center justify-center border-b bg-lienzo-logo p-6">
+      <div
+        className={cn(
+          "relative flex aspect-[4/3] items-center justify-center border-b bg-lienzo-logo p-6",
+          descartada && "[&_img]:opacity-50 [&_img]:grayscale",
+        )}
+      >
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- URLs firmadas/locales, sin optimizador
-          <img src={logoUrl} alt={`Logo de ${nombrePropuesto || "la propuesta"}`} className="max-h-full max-w-full object-contain" />
+          <img
+            src={logoUrl}
+            alt={`Logo de ${nombrePropuesto || "la propuesta"}`}
+            loading="lazy"
+            className="max-h-full max-w-full object-contain"
+          />
         ) : (
           <div className="flex flex-col items-center gap-2 text-muted-foreground/70">
             <ImageIcon className="size-10" strokeWidth={1.25} />
@@ -42,6 +55,11 @@ export function TarjetaPropuesta({
         <span className="absolute top-3 left-3 rounded-md bg-card/90 px-2 py-0.5 font-mono text-xs text-muted-foreground shadow-xs">
           {folio ? `Folio ${folio}` : vistaPrevia ? "Folio nuevo" : ""}
         </span>
+        {descartada && (
+          <span className="absolute top-3 right-3 rounded-md bg-destructive px-2 py-0.5 text-xs font-medium text-white shadow-xs">
+            Descartada
+          </span>
+        )}
       </div>
       <div className="space-y-3 p-5">
         <h3

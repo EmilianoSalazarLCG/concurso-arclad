@@ -124,8 +124,30 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
   servidor).
 - `reiniciar_folio_si_vacio()` (solo service role) deja el folio en 001 tras pruebas.
 
+## Gestión de propuestas (Fase 4)
+- `/admin/propuestas`: tabla/tarjetas (la vista se recuerda por admin en una cookie),
+  búsqueda sin acentos (folio, nombre, participante), filtros área/ciudad/estado
+  (por defecto activas), orden, contadores y paginación de 24. Los filtros viven en la
+  URL (`src/lib/validacion/filtros.ts`).
+- Vista `propuestas_admin` (security_invoker): nombres de quién capturó/editó/descartó y
+  columnas normalizadas `busqueda` / `nombre_orden`. Capa de datos: `src/lib/datos/gestion.ts`.
+  OJO: no envolver un query builder de Supabase en una función `async` (es "thenable" y se
+  ejecuta al hacer await); armarlo de forma síncrona.
+- Detalle `/admin/propuestas/[id]` (anterior/siguiente por folio, descarga del original vía
+  URL firmada) y edición `/admin/propuestas/[id]/editar` (mismo formulario, `inicial`).
+- Trigger `propuestas_auditoria`: `updated_by/updated_at` solo cambian si cambia el contenido;
+  registra `descartada_por/at` y `motivo_descarte`; impide descartar si la propuesta está en
+  una ronda abierta o cerrada; protege folio/created_by/created_at.
+- Exportar: Excel en el servidor (`/admin/propuestas/exportar`, exceljs); ZIP de logos armado
+  en el NAVEGADOR (fflate) con URLs firmadas, por el límite de 4.5 MB de respuesta de Vercel.
+- `/admin/mantenimiento`: limpieza de logos huérfanos con más de 24 h
+  (`src/lib/datos/huerfanos.ts`), con confirmación; recalcula antes de borrar.
+- `ajustar_folio()` (solo service role): deja el consecutivo en (folio más alto + 1) tras
+  borrar propuestas de prueba.
+
 ## Fases
 - Fase 1 (proyecto base): scaffolding, clientes Supabase, página de verificación, repo y deploy.
 - Fase 2 (base de datos): migraciones, RLS, Storage, tipos y capa de datos. ✅
 - Fase 3 (login y captura): login de admins, panel, formulario de captura rápida. ✅
-- Siguientes fases: lista completa y edición (Fase 4), votación, modo reunión.
+- Fase 4 (gestión): lista, detalle, edición, descartar/restaurar, exportar, mantenimiento. ✅
+- Siguientes fases: votación por rondas, modo reunión.

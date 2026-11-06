@@ -98,10 +98,16 @@ export async function actualizarPropuesta(
 ): Promise<Resultado<Propuesta>> {
   await requerirAdmin();
   const v = await prepararDatos(datos);
-  if (!v.ok) return v;
+  if (!v.ok) {
+    if (logoRutaNueva) await borrarLogo(logoRutaNueva);
+    return v;
+  }
 
   const anterior = await obtenerPropuesta(id);
-  if (!anterior) return falla("La propuesta no existe.");
+  if (!anterior) {
+    if (logoRutaNueva) await borrarLogo(logoRutaNueva);
+    return falla("La propuesta no existe.");
+  }
 
   let logo_path = anterior.logo_path;
   if (logoRutaNueva) {
@@ -125,20 +131,45 @@ export async function actualizarPropuesta(
   return ok(data);
 }
 
-/** Descartar o reactivar (las propuestas no se borran). */
-export async function cambiarEstadoPropuesta(
-  id: string,
-  estado: EstadoPropuesta,
-): Promise<Resultado<Propuesta>> {
+export const MOTIVO_DESCARTE_MAX = 500;
+
+/**
+ * Descarta una propuesta (no se borra). La base de datos rechaza el descarte si la
+ * propuesta está en una ronda abierta o cerrada, y registra quién y cuándo.
+ */
+export async function descartarPropuesta(id: string, motivo?: string | null): Promise<Resultado<Propuesta>> {
+  await requerirAdmin();
+  const m = (motivo ?? "").trim();
+  if (m.length > MOTIVO_DESCARTE_MAX) return falla(`El motivo admite máximo ${MOTIVO_DESCARTE_MAX} caracteres.`);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("propuestas")
+    .update({ estado: "descartada", motivo_descarte: m || null })
+    .eq("id", id)
+    .eq("estado", "activa")
+    .select("*")
+    .maybeSingle();
+  if (error) {
+    if (error.code === "23514" && error.message.startsWith("No se puede descartar")) return falla(error.message);
+    return falla(`No se pudo descartar: ${error.message}`);
+  }
+  if (!data) return falla("La propuesta no existe o ya estaba descartada.");
+  return ok(data);
+}
+
+/** Regresa una propuesta descartada a activa (borra el motivo de descarte). */
+export async function restaurarPropuesta(id: string): Promise<Resultado<Propuesta>> {
   await requerirAdmin();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("propuestas")
-    .update({ estado })
+    .update({ estado: "activa" })
     .eq("id", id)
+    .eq("estado", "descartada")
     .select("*")
-    .single();
-  if (error) return falla(`No se pudo cambiar el estado: ${error.message}`);
+    .maybeSingle();
+  if (error) return falla(`No se pudo restaurar: ${error.message}`);
+  if (!data) return falla("La propuesta no existe o ya estaba activa.");
   return ok(data);
 }
 

@@ -7,12 +7,13 @@ import { LOGO_MAX_BYTES } from "@/lib/validacion/propuesta";
 import { cn } from "@/lib/utils";
 
 export type LogoSeleccionado = {
-  archivo: File;
-  /** Object URL para la vista previa (liberarlo al reemplazar o quitar). */
+  /** Archivo nuevo por subir; null = logo actual ya guardado (al editar). */
+  archivo: File | null;
+  /** Object URL (logo nuevo) o URL firmada (logo actual) para la vista previa. */
   url: string;
-  ancho: number;
-  alto: number;
-  convertido: boolean;
+  /** Texto informativo: "PNG · 120 KB · 512×512 px" o "Logo actual". */
+  descripcion: string;
+  convertido?: boolean;
 };
 
 const TIPOS_DIRECTOS = ["image/png", "image/jpeg"];
@@ -56,7 +57,13 @@ async function prepararImagen(blob: Blob): Promise<LogoSeleccionado> {
   if (archivo.size > LOGO_MAX_BYTES) {
     throw new Error(`El logo pesa ${formatearTamano(archivo.size)}; el máximo es 5 MB.`);
   }
-  return { archivo, url: URL.createObjectURL(archivo), ancho, alto, convertido };
+  const tipo = archivo.type === "image/png" ? "PNG" : "JPG";
+  return {
+    archivo,
+    url: URL.createObjectURL(archivo),
+    descripcion: `${tipo} · ${formatearTamano(archivo.size)} · ${ancho}×${alto} px`,
+    convertido,
+  };
 }
 
 /** Imagen como archivo dentro del portapapeles o de lo que se arrastró. */
@@ -245,8 +252,7 @@ export function ZonaLogo({
             </div>
             <div className="flex-1 space-y-3 text-center sm:text-left">
               <p className="text-sm text-muted-foreground" data-testid="info-logo">
-                {valor.archivo.type === "image/png" ? "PNG" : "JPG"} · {formatearTamano(valor.archivo.size)} ·{" "}
-                {valor.ancho}×{valor.alto} px
+                {valor.descripcion}
               </p>
               <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
                 <Button type="button" variant="outline" size="sm" onClick={abrirSelector}>

@@ -7,9 +7,10 @@ import { AlertTriangleIcon, Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 import {
   buscarDuplicados,
+  editarPropuesta,
   guardarPropuesta,
   prepararSubidaLogo,
-} from "@/app/admin/(panel)/propuestas/nueva/acciones";
+} from "@/app/admin/(panel)/propuestas/acciones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,10 +57,35 @@ function agregarOpcion(opciones: string[], valor: string) {
   return [...opciones, valor].sort((a, b) => a.localeCompare(b, "es-MX"));
 }
 
-export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciudades: string[] }) {
+/** Datos de la propuesta al editar (si no se pasa, el formulario es de captura). */
+export type PropuestaInicial = {
+  id: string;
+  folio: string;
+  campos: CamposPropuesta;
+  logoUrl: string;
+};
+
+function logoActual(inicial?: PropuestaInicial): LogoSeleccionado | null {
+  return inicial ? { archivo: null, url: inicial.logoUrl, descripcion: "Logo actual" } : null;
+}
+
+function liberar(logo: LogoSeleccionado | null) {
+  if (logo?.archivo && logo.url.startsWith("blob:")) URL.revokeObjectURL(logo.url);
+}
+
+export function FormularioPropuesta({
+  areas,
+  ciudades,
+  inicial,
+}: {
+  areas: string[];
+  ciudades: string[];
+  inicial?: PropuestaInicial;
+}) {
   const router = useRouter();
-  const [campos, setCampos] = useState<CamposPropuesta>(CAMPOS_VACIOS);
-  const [logo, setLogo] = useState<LogoSeleccionado | null>(null);
+  const editando = Boolean(inicial);
+  const [campos, setCampos] = useState<CamposPropuesta>(inicial?.campos ?? CAMPOS_VACIOS);
+  const [logo, setLogo] = useState<LogoSeleccionado | null>(() => logoActual(inicial));
   const [errores, setErrores] = useState<ErroresPropuesta>({});
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [guardando, setGuardando] = useState<Modo | null>(null);
@@ -77,7 +103,10 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
     setEsMac(/Mac|iPhone|iPad/.test(navigator.userAgent));
   }, []);
 
-  const hayCambios = Object.values(campos).some((v) => v.trim()) || logo !== null;
+  const hayCambios = inicial
+    ? JSON.stringify(campos) !== JSON.stringify(inicial.campos) || logo?.archivo != null || logo === null
+    : Object.values(campos).some((v) => v.trim()) || logo !== null;
+  const excluirId = inicial?.id;
 
   // Aviso al salir de la página con datos sin guardar.
   useEffect(() => {
@@ -100,11 +129,11 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
       return () => clearTimeout(t);
     }
     const t = setTimeout(async () => {
-      const r = await buscarDuplicados(persona, nombre);
+      const r = await buscarDuplicados(persona, nombre, excluirId);
       if (id === consultaDuplicados.current) setDuplicados(r);
     }, 400);
     return () => clearTimeout(t);
-  }, [participante_nombre, nombre_propuesto]);
+  }, [participante_nombre, nombre_propuesto, excluirId]);
 
   function cambiar(campo: CampoPropuesta, valor: string) {
     setCampos((c) => ({ ...c, [campo]: valor }));
@@ -113,7 +142,7 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
 
   function cambiarLogo(nuevo: LogoSeleccionado | null) {
     setLogo((anterior) => {
-      if (anterior && anterior.url !== nuevo?.url) URL.revokeObjectURL(anterior.url);
+      if (anterior && anterior.url !== nuevo?.url) liberar(anterior);
       return nuevo;
     });
     if (nuevo && errores.logo) setErrores((e) => sinError(e, "logo"));
@@ -139,7 +168,11 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
     // 1) Validación en el navegador.
     const limpio = limpiarCampos(campos);
     const e: ErroresPropuesta = validarCampos(limpio);
-    const errLogo = validarArchivoLogo(logo && { tipo: logo.archivo.type, tamano: logo.archivo.size });
+    const errLogo = !logo
+      ? "El logo es obligatorio."
+      : logo.archivo
+        ? validarArchivoLogo({ tipo: logo.archivo.type, tamano: logo.archivo.size })
+        : undefined;
     if (errLogo) e.logo = errLogo;
     setErrores(e);
     if (Object.keys(e).length) {
@@ -151,18 +184,28 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
     setGuardando(modo);
     setErrorGeneral(null);
     try {
-      // 2) Subida del logo directo a Storage con URL firmada por el servidor.
-      const subida = await prepararSubidaLogo(logo!.archivo.type, logo!.archivo.size);
-      if (!subida.ok) throw new Error(subida.error);
-      const { error: errSubida } = await createClient()
-        .storage.from("logos")
-        .uploadToSignedUrl(subida.data.ruta, subida.data.token, logo!.archivo, {
-          contentType: logo!.archivo.type,
-        });
-      if (errSubida) throw new Error(`No se pudo subir el logo: ${errSubida.message}`);
+      // 2) Si hay logo nuevo: subida directa a Storage con URL firmada por el servidor.
+      let ruta: string | null = null;
+      const archivo = logo!.archivo;
+      if (archivo) {
+        const subida = await prepararSubidaLogo(archivo.type, archivo.size);
+        if (!subida.ok) throw new Error(subida.error);
+        const { error: errSubida } = await createClient()
+          .storage.from("logos")
+          .uploadToSignedUrl(subida.data.ruta, subida.data.token, archivo, { contentType: archivo.type });
+        if (errSubida) throw new Error(`No se pudo subir el logo: ${errSubida.message}`);
+        ruta = subida.data.ruta;
+      }
 
       // 3) Guardado (el servidor valida todo de nuevo).
-      const r = await guardarPropuesta(limpio, subida.data.ruta);
+      if (inicial) {
+        const r = await editarPropuesta(inicial.id, limpio, ruta);
+        if (!r.ok) throw new Error(r.error);
+        toast.success(`Propuesta ${r.data.folio} actualizada`);
+        router.push(`/admin/propuestas/${inicial.id}`);
+        return; // se mantiene "guardando" hasta salir de la página
+      }
+      const r = await guardarPropuesta(limpio, ruta!);
       if (!r.ok) throw new Error(r.error);
 
       toast.success(`Propuesta ${r.data.folio} guardada`);
@@ -199,7 +242,7 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
       onKeyDown={(e) => {
         if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
           e.preventDefault();
-          void guardar(e.shiftKey ? "otra" : "lista");
+          void guardar(e.shiftKey && !editando ? "otra" : "lista");
         }
       }}
       className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]"
@@ -331,21 +374,32 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
         )}
 
         <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <Link href="/admin" className="text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            href={inicial ? `/admin/propuestas/${inicial.id}` : "/admin"}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
             Cancelar
           </Link>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button type="submit" variant="outline" className="h-10" disabled={guardando !== null}>
-              {guardando === "lista" && <Loader2Icon data-icon="inline-start" className="animate-spin" />}
-              Guardar
-              <kbd className="ml-1 hidden text-xs text-muted-foreground sm:inline">{atajo}↵</kbd>
+          {inicial ? (
+            <Button type="submit" className="h-10" disabled={guardando !== null}>
+              {guardando && <Loader2Icon data-icon="inline-start" className="animate-spin" />}
+              Guardar cambios
+              <kbd className="ml-1 hidden text-xs opacity-75 sm:inline">{atajo}↵</kbd>
             </Button>
-            <Button type="button" className="h-10" disabled={guardando !== null} onClick={() => void guardar("otra")}>
-              {guardando === "otra" && <Loader2Icon data-icon="inline-start" className="animate-spin" />}
-              Guardar y capturar otra
-              <kbd className="ml-1 hidden text-xs opacity-75 sm:inline">⇧{atajo}↵</kbd>
-            </Button>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button type="submit" variant="outline" className="h-10" disabled={guardando !== null}>
+                {guardando === "lista" && <Loader2Icon data-icon="inline-start" className="animate-spin" />}
+                Guardar
+                <kbd className="ml-1 hidden text-xs text-muted-foreground sm:inline">{atajo}↵</kbd>
+              </Button>
+              <Button type="button" className="h-10" disabled={guardando !== null} onClick={() => void guardar("otra")}>
+                {guardando === "otra" && <Loader2Icon data-icon="inline-start" className="animate-spin" />}
+                Guardar y capturar otra
+                <kbd className="ml-1 hidden text-xs opacity-75 sm:inline">⇧{atajo}↵</kbd>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -354,6 +408,7 @@ export function FormularioPropuesta({ areas, ciudades }: { areas: string[]; ciud
         <TarjetaPropuesta
           vistaPrevia
           datos={{
+            folio: inicial?.folio,
             nombrePropuesto: campos.nombre_propuesto.trim(),
             significado: campos.significado.trim(),
             participante: campos.participante_nombre.trim(),

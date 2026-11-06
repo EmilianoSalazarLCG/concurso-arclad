@@ -145,45 +145,57 @@ export type Database = {
           ciudad: string
           created_at: string
           created_by: string
+          descartada_at: string | null
+          descartada_por: string | null
           estado: string
           folio: number
           id: string
           logo_path: string
+          motivo_descarte: string | null
           nombre_propuesto: string
           notas_internas: string | null
           participante_nombre: string
           significado: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           area: string
           ciudad: string
           created_at?: string
           created_by?: string
+          descartada_at?: string | null
+          descartada_por?: string | null
           estado?: string
           folio?: never
           id?: string
           logo_path: string
+          motivo_descarte?: string | null
           nombre_propuesto: string
           notas_internas?: string | null
           participante_nombre: string
           significado: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           area?: string
           ciudad?: string
           created_at?: string
           created_by?: string
+          descartada_at?: string | null
+          descartada_por?: string | null
           estado?: string
           folio?: never
           id?: string
           logo_path?: string
+          motivo_descarte?: string | null
           nombre_propuesto?: string
           notas_internas?: string | null
           participante_nombre?: string
           significado?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -212,6 +224,13 @@ export type Database = {
             columns: ["propuesta_id"]
             isOneToOne: false
             referencedRelation: "propuestas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ronda_propuestas_propuesta_id_fkey"
+            columns: ["propuesta_id"]
+            isOneToOne: false
+            referencedRelation: "propuestas_admin"
             referencedColumns: ["id"]
           },
           {
@@ -252,6 +271,33 @@ export type Database = {
       }
     }
     Views: {
+      propuestas_admin: {
+        Row: {
+          area: string | null
+          busqueda: string | null
+          capturada_por_nombre: string | null
+          ciudad: string | null
+          created_at: string | null
+          created_by: string | null
+          descartada_at: string | null
+          descartada_por: string | null
+          descartada_por_nombre: string | null
+          editada_por_nombre: string | null
+          estado: string | null
+          folio: number | null
+          id: string | null
+          logo_path: string | null
+          motivo_descarte: string | null
+          nombre_orden: string | null
+          nombre_propuesto: string | null
+          notas_internas: string | null
+          participante_nombre: string | null
+          significado: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Relationships: []
+      }
       resultados_ronda: {
         Row: {
           folio: number | null
@@ -276,6 +322,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "ronda_propuestas_propuesta_id_fkey"
+            columns: ["propuesta_id"]
+            isOneToOne: false
+            referencedRelation: "propuestas_admin"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ronda_propuestas_ronda_id_fkey"
             columns: ["ronda_id"]
             isOneToOne: false
@@ -286,6 +339,7 @@ export type Database = {
       }
     }
     Functions: {
+      ajustar_folio: { Args: never; Returns: number }
       buscar_posibles_duplicados: {
         Args: {
           p_excluir_id?: string
