@@ -26,6 +26,24 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - Habrá un "modo reunión" para proyectar la galería de propuestas y resultados.
 - Idioma de toda la interfaz: español (México).
 
+## Decisión de acceso
+- SOLO los admins (con login) ven el historial completo de propuestas, incluidas las
+  descartadas, las notas internas y quién capturó cada una.
+- Los gerentes NO tienen acceso al historial: solo ven las propuestas de la ronda que se
+  está votando, sin notas internas (`propuestasParaVotar()` en `src/lib/datos/rondas.ts`).
+- El modo reunión lo abre un admin desde su sesión y lo proyecta en pantalla (es una ruta
+  dentro de `/admin`, protegida igual que el resto del panel).
+
+## Estilo visual
+- Limpio y profesional: títulos con serif (Source Serif 4, `font-heading`), texto con
+  sans-serif (Inter), fondo claro, acento verde, tarjetas con bordes suaves.
+- Todos los colores, radios y fuentes son variables en `:root` de `src/app/globals.css`
+  (tokens de Tailwind: `primary`, `accent`, `advertencia`, `lienzo-logo`, etc.). Para
+  adaptar a la marca ARclad se cambian ahí; los componentes no usan colores fijos.
+- Solo tema claro. Responsive (la captura se hace principalmente en computadora).
+- Tarjeta de propuesta reutilizable: `src/components/propuestas/tarjeta-propuesta.tsx`
+  (vista previa, galería y modo reunión).
+
 ## Votantes (gerentes)
 - Son 11 y por ahora van fijos en el código, en un solo archivo de configuración
   (`src/config/votantes.ts`), para poder cambiarlos fácilmente después.
@@ -90,7 +108,24 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - Las funciones de admin usan la sesión del usuario (RLS aplica). Las de votación/modo
   reunión usan service role y nunca devuelven `notas_internas`.
 
+## Panel de admin (Fase 3)
+- Rutas: `/admin/login` (pública), `/admin/salir` (cierra sesión sin acceso), y el grupo
+  `src/app/admin/(panel)/` (layout protegido): `/admin`, `/admin/propuestas`,
+  `/admin/propuestas/nueva`.
+- Protección en 3 capas: `src/proxy.ts` (sin sesión → login), `exigirAdmin()` en layout y
+  en cada página (no admin → cierra sesión y "No tienes acceso"), y `requerirAdmin()` en
+  cada Server Action / función de datos. Además, RLS en la base.
+- Subida de logos: el navegador sube DIRECTO a Storage con una URL de subida firmada que
+  genera el servidor (`prepararSubidaLogo`), porque Vercel limita el cuerpo de las
+  funciones a 4.5 MB. Luego `guardarPropuesta` descarga y valida el archivo (tamaño y
+  firma PNG/JPG) antes de insertar; si algo falla, borra el logo.
+- Validación compartida cliente/servidor: `src/lib/validacion/propuesta.ts`.
+- Área y ciudad se unifican sin acentos/mayúsculas con los valores existentes (cliente y
+  servidor).
+- `reiniciar_folio_si_vacio()` (solo service role) deja el folio en 001 tras pruebas.
+
 ## Fases
 - Fase 1 (proyecto base): scaffolding, clientes Supabase, página de verificación, repo y deploy.
 - Fase 2 (base de datos): migraciones, RLS, Storage, tipos y capa de datos. ✅
-- Siguientes fases: login de admins y captura manual, votación, modo reunión.
+- Fase 3 (login y captura): login de admins, panel, formulario de captura rápida. ✅
+- Siguientes fases: lista completa y edición (Fase 4), votación, modo reunión.

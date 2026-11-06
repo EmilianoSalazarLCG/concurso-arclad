@@ -1,52 +1,63 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { LOGO_MAX_BYTES, validarArchivoLogo } from "@/lib/validacion/propuesta";
+import { requerirAdmin } from "./auth";
 import { falla, ok, type Resultado } from "./tipos";
 
+/**
+ * Flujo de subida (evita el límite de 4.5 MB del cuerpo de las funciones en Vercel):
+ *  1. El servidor genera una URL de subida firmada (solo admins) con nombre uuid.
+ *  2. El navegador sube el archivo directo a Storage con ese token.
+ *  3. El servidor descarga el archivo y valida tamaño y firma real antes de guardarlo.
+ */
+
 const BUCKET = "logos";
-export const LOGO_MAX_BYTES = 5 * 1024 * 1024;
-const TIPOS: Record<string, { ext: string; firma: number[] }> = {
-  "image/png": { ext: "png", firma: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] },
-  "image/jpeg": { ext: "jpg", firma: [0xff, 0xd8, 0xff] },
+const EXTENSION = { "image/png": "png", "image/jpeg": "jpg" } as const;
+const FIRMAS: Record<string, number[]> = {
+  png: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+  jpg: [0xff, 0xd8, 0xff],
 };
-/** Vigencia de las URLs firmadas (segundos). */
+const RUTA_VALIDA = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(png|jpg)$/;
+/** Vigencia de las URLs firmadas para ver logos (segundos). */
 const URL_FIRMADA_TTL = 60 * 60;
 
-/** Valida tamaño, tipo declarado y firma real del archivo (PNG/JPG). */
-export async function validarLogo(archivo: Blob): Promise<Resultado<{ ext: string; tipo: string }>> {
-  if (archivo.size === 0) return falla("El logo está vacío.");
-  if (archivo.size > LOGO_MAX_BYTES) return falla("El logo pesa más de 5 MB.");
-  const tipo = TIPOS[archivo.type];
-  if (!tipo) return falla("El logo debe ser PNG o JPG.");
-  const cabecera = new Uint8Array(await archivo.slice(0, tipo.firma.length).arrayBuffer());
-  if (!tipo.firma.every((b, i) => cabecera[i] === b)) {
-    return falla("El archivo no es una imagen PNG/JPG válida.");
-  }
-  return ok({ ext: tipo.ext, tipo: archivo.type });
+export async function crearSubidaLogo(
+  tipo: string,
+  tamano: number,
+): Promise<Resultado<{ ruta: string; token: string }>> {
+  await requerirAdmin();
+  const error = validarArchivoLogo({ tipo, tamano });
+  if (error) return falla(error);
+
+  const ruta = `${crypto.randomUUID()}.${EXTENSION[tipo as keyof typeof EXTENSION]}`;
+  const supabase = await createClient(); // sesión del admin: aplica la política de Storage
+  const { data, error: e } = await supabase.storage.from(BUCKET).createSignedUploadUrl(ruta);
+  if (e || !data) return falla(`No se pudo preparar la subida del logo: ${e?.message ?? "sin respuesta"}`);
+  return ok({ ruta: data.path, token: data.token });
 }
 
-/**
- * Sube el logo con nombre aleatorio (uuid) usando la sesión del admin
- * (las políticas de Storage exigen ser admin). Devuelve la ruta en el bucket.
- */
-export async function subirLogo(archivo: Blob): Promise<Resultado<string>> {
-  const v = await validarLogo(archivo);
-  if (!v.ok) return v;
+/** Comprueba que el logo subido exista, pese ≤ 5 MB y sea realmente PNG/JPG. Si no, lo borra. */
+export async function verificarLogoSubido(ruta: string): Promise<Resultado<string>> {
+  const m = RUTA_VALIDA.exec(ruta);
+  if (!m) return falla("La ruta del logo no es válida.");
 
-  const ruta = `${crypto.randomUUID()}.${v.data.ext}`;
-  const supabase = await createClient();
-  const { error } = await supabase.storage.from(BUCKET).upload(ruta, archivo, {
-    contentType: v.data.tipo,
-    upsert: false,
-  });
-  if (error) return falla(`No se pudo subir el logo: ${error.message}`);
+  const { data, error } = await createAdminClient().storage.from(BUCKET).download(ruta);
+  if (error || !data) return falla("No se encontró el logo subido. Vuelve a intentarlo.");
+
+  const firma = FIRMAS[m[1]];
+  const cabecera = new Uint8Array(await data.slice(0, firma.length).arrayBuffer());
+  const valido = data.size > 0 && data.size <= LOGO_MAX_BYTES && firma.every((b, i) => cabecera[i] === b);
+  if (!valido) {
+    await borrarLogo(ruta);
+    return falla("El archivo del logo no es una imagen PNG/JPG válida de máximo 5 MB.");
+  }
   return ok(ruta);
 }
 
-/** Borra un logo (por ejemplo, al reemplazarlo o si falla el alta de la propuesta). */
+/** Borra un logo (al reemplazarlo, si falla el alta o si no pasó la validación). */
 export async function borrarLogo(ruta: string): Promise<void> {
-  const supabase = await createClient();
-  await supabase.storage.from(BUCKET).remove([ruta]);
+  await createAdminClient().storage.from(BUCKET).remove([ruta]);
 }
 
 /**

@@ -303,6 +303,7 @@ export type Database = {
         }[]
       }
       es_admin: { Args: never; Returns: boolean }
+      reiniciar_folio_si_vacio: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

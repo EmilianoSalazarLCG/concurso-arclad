@@ -18,8 +18,3 @@ export const falla = (error: string): Resultado<never> => ({ ok: false, error })
 export function formatearFolio(folio: number): string {
   return String(folio).padStart(3, "0");
 }
-
-/** Recorta y colapsa espacios (para área, ciudad, nombres). */
-export function limpiarTexto(t: string): string {
-  return t.replace(/\s+/g, " ").trim();
-}

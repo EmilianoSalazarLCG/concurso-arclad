@@ -28,10 +28,23 @@ export async function updateSession(request: NextRequest) {
   });
 
   // No poner lógica entre createServerClient y getUser(): refresca el token.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Fase posterior: aquí se protegerán las rutas /admin redirigiendo a /login
-  // cuando no haya usuario.
+  // Primera barrera para /admin/*: sin sesión → login. (La validación de que el
+  // usuario esté en `admins` se hace en el servidor, en cada página y acción.)
+  const { pathname, search } = request.nextUrl;
+  const esPanel = pathname === "/admin" || pathname.startsWith("/admin/");
+  const esPublica = pathname === "/admin/login" || pathname === "/admin/salir";
+  if (esPanel && !esPublica && !user) {
+    const destino = request.nextUrl.clone();
+    destino.pathname = "/admin/login";
+    destino.search = `?siguiente=${encodeURIComponent(pathname + search)}`;
+    const redireccion = NextResponse.redirect(destino);
+    response.cookies.getAll().forEach((c) => redireccion.cookies.set(c));
+    return redireccion;
+  }
 
   return response;
 }

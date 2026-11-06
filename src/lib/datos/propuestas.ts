@@ -1,42 +1,32 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import {
+  canonizar,
+  claveNormalizada,
+  limpiarCampos,
+  validarCampos,
+  type CamposPropuesta,
+} from "@/lib/validacion/propuesta";
 import { requerirAdmin } from "./auth";
-import { borrarLogo, subirLogo } from "./logos";
-import { falla, limpiarTexto, ok, type EstadoPropuesta, type Propuesta, type Resultado } from "./tipos";
+import { borrarLogo, verificarLogoSubido } from "./logos";
+import { falla, ok, type EstadoPropuesta, type Propuesta, type Resultado } from "./tipos";
 
 /** Todas las funciones de este archivo son solo para admins (sesión + RLS). */
 
-export type DatosPropuesta = {
-  participante_nombre: string;
-  area: string;
-  ciudad: string;
-  nombre_propuesto: string;
-  significado: string;
-  notas_internas?: string | null;
-};
+export type DatosPropuesta = Partial<CamposPropuesta>;
 
-function normalizarDatos(d: DatosPropuesta): Resultado<DatosPropuesta> {
-  const limpio = {
-    participante_nombre: limpiarTexto(d.participante_nombre ?? ""),
-    area: limpiarTexto(d.area ?? ""),
-    ciudad: limpiarTexto(d.ciudad ?? ""),
-    nombre_propuesto: limpiarTexto(d.nombre_propuesto ?? ""),
-    significado: (d.significado ?? "").trim(),
-    notas_internas: d.notas_internas?.trim() || null,
-  };
-  const faltantes = (
-    [
-      ["participante_nombre", "nombre de la persona"],
-      ["area", "área"],
-      ["ciudad", "ciudad"],
-      ["nombre_propuesto", "nombre propuesto"],
-      ["significado", "significado"],
-    ] as const
-  )
-    .filter(([k]) => !limpio[k])
-    .map(([, etiqueta]) => etiqueta);
-  if (faltantes.length) return falla(`Faltan campos obligatorios: ${faltantes.join(", ")}.`);
-  return ok(limpio);
+/** Valida en servidor y unifica área/ciudad con las variantes ya capturadas. */
+async function prepararDatos(d: DatosPropuesta): Promise<Resultado<CamposPropuesta>> {
+  const limpio = limpiarCampos(d);
+  const primero = Object.values(validarCampos(limpio))[0];
+  if (primero) return falla(primero);
+
+  const { areas, ciudades } = await valoresAutocompletar();
+  return ok({ ...limpio, area: canonizar(limpio.area, areas), ciudad: canonizar(limpio.ciudad, ciudades) });
+}
+
+function filaDesde(c: CamposPropuesta) {
+  return { ...c, notas_internas: c.notas_internas || null };
 }
 
 export async function listarPropuestas(filtro?: { estado?: EstadoPropuesta }): Promise<Propuesta[]> {
@@ -49,6 +39,21 @@ export async function listarPropuestas(filtro?: { estado?: EstadoPropuesta }): P
   return data;
 }
 
+export async function contarPropuestas(): Promise<{ activas: number; descartadas: number }> {
+  await requerirAdmin();
+  const supabase = await createClient();
+  const contar = async (estado: EstadoPropuesta) => {
+    const { count, error } = await supabase
+      .from("propuestas")
+      .select("id", { count: "exact", head: true })
+      .eq("estado", estado);
+    if (error) throw new Error(`No se pudieron contar las propuestas: ${error.message}`);
+    return count ?? 0;
+  };
+  const [activas, descartadas] = await Promise.all([contar("activa"), contar("descartada")]);
+  return { activas, descartadas };
+}
+
 export async function obtenerPropuesta(id: string): Promise<Propuesta | null> {
   await requerirAdmin();
   const supabase = await createClient();
@@ -57,52 +62,58 @@ export async function obtenerPropuesta(id: string): Promise<Propuesta | null> {
   return data;
 }
 
-/** Alta: sube el logo (nombre uuid) y crea la propuesta. Si el alta falla, borra el logo. */
-export async function crearPropuesta(datos: DatosPropuesta, logo: Blob): Promise<Resultado<Propuesta>> {
+/**
+ * Alta. `logoRuta` es el archivo que el navegador ya subió con la URL firmada
+ * (ver logos.ts). Se valida el archivo; si algo falla, el logo se borra.
+ */
+export async function crearPropuesta(datos: DatosPropuesta, logoRuta: string): Promise<Resultado<Propuesta>> {
   await requerirAdmin();
-  const v = normalizarDatos(datos);
-  if (!v.ok) return v;
-
-  const subida = await subirLogo(logo);
-  if (!subida.ok) return subida;
+  const v = await prepararDatos(datos);
+  if (!v.ok) {
+    await borrarLogo(logoRuta);
+    return v;
+  }
+  const logo = await verificarLogoSubido(logoRuta);
+  if (!logo.ok) return logo;
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("propuestas")
-    .insert({ ...v.data, logo_path: subida.data })
+    .insert({ ...filaDesde(v.data), logo_path: logo.data })
     .select("*")
     .single();
   if (error) {
-    await borrarLogo(subida.data);
+    if (error.code === "23505") return falla("Ese logo ya está asignado a otra propuesta. Vuelve a subirlo.");
+    await borrarLogo(logo.data);
     return falla(`No se pudo guardar la propuesta: ${error.message}`);
   }
   return ok(data);
 }
 
-/** Edición: si viene un logo nuevo, lo sube, actualiza la ruta y borra el anterior. */
+/** Edición: si viene `logoRutaNueva` (ya subido), reemplaza el logo y borra el anterior. */
 export async function actualizarPropuesta(
   id: string,
   datos: DatosPropuesta,
-  logoNuevo?: Blob | null,
+  logoRutaNueva?: string | null,
 ): Promise<Resultado<Propuesta>> {
   await requerirAdmin();
-  const v = normalizarDatos(datos);
+  const v = await prepararDatos(datos);
   if (!v.ok) return v;
 
   const anterior = await obtenerPropuesta(id);
   if (!anterior) return falla("La propuesta no existe.");
 
   let logo_path = anterior.logo_path;
-  if (logoNuevo && logoNuevo.size > 0) {
-    const subida = await subirLogo(logoNuevo);
-    if (!subida.ok) return subida;
-    logo_path = subida.data;
+  if (logoRutaNueva) {
+    const logo = await verificarLogoSubido(logoRutaNueva);
+    if (!logo.ok) return logo;
+    logo_path = logo.data;
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("propuestas")
-    .update({ ...v.data, logo_path })
+    .update({ ...filaDesde(v.data), logo_path })
     .eq("id", id)
     .select("*")
     .single();
@@ -158,16 +169,20 @@ export async function buscarPosiblesDuplicados(
   return data as PosibleDuplicado[];
 }
 
-/** Valores ya capturados de área y ciudad, para autocompletar (sin repetir, orden alfabético). */
+/** Valores ya capturados de área y ciudad para autocompletar (sin variantes, orden alfabético). */
 export async function valoresAutocompletar(): Promise<{ areas: string[]; ciudades: string[] }> {
   await requerirAdmin();
   const supabase = await createClient();
-  const { data, error } = await supabase.from("propuestas").select("area, ciudad");
+  const { data, error } = await supabase
+    .from("propuestas")
+    .select("area, ciudad")
+    .order("created_at", { ascending: true });
   if (error) throw new Error(`No se pudieron cargar las sugerencias: ${error.message}`);
+  // Conserva la primera grafía capturada de cada valor ("Operaciones" gana a "operaciones").
   const unicos = (xs: string[]) => {
     const vistos = new Map<string, string>();
     for (const x of xs) {
-      const k = x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+      const k = claveNormalizada(x);
       if (!vistos.has(k)) vistos.set(k, x);
     }
     return [...vistos.values()].sort((a, b) => a.localeCompare(b, "es-MX"));
