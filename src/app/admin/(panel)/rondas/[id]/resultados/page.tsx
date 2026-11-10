@@ -53,7 +53,7 @@ export default async function ResultadosPage({ params }: PageProps<"/admin/ronda
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span>Pasan las mejores {ronda.top_n}</span>
             <span className="font-semibold text-foreground cifras" data-testid="enviaron">
-              {d.enviaron} de {d.totalVotantes} gerentes enviaron
+              {d.enviaron} de {d.totalVotantes} {d.etiquetaVotantes} enviaron
             </span>
             {ronda.estado === "abierta" && <AutoRefrescar segundos={10} />}
           </span>
