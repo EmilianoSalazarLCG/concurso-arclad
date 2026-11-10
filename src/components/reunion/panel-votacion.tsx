@@ -77,7 +77,7 @@ export function PanelVotacion({ urlVotar, linkCorto, qrSvg }: { urlVotar: string
                 Ronda {avance.ronda.numero} · {avance.ronda.nombre} · {avance.totalPropuestas} propuestas
               </p>
               <p className="mt-3 font-heading text-6xl leading-[1.02] font-semibold cifras xl:text-7xl" data-testid="resumen-avance">
-                {avance.completos} de {avance.totalVotantes} gerentes han votado
+                {avance.completos} de {avance.totalVotantes} {avance.etiqueta} han votado
               </p>
               <div className="mt-6 h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={porcentaje} aria-valuemin={0} aria-valuemax={100}>
                 <div className="h-full rounded-full bg-primary transition-[width] duration-700" style={{ width: `${porcentaje}%` }} />
@@ -123,7 +123,7 @@ function Lista({ titulo, testid, children }: { titulo: string; testid: string; c
   return (
     <div>
       <h2 className="mb-3 text-xl font-semibold">{titulo}</h2>
-      <ul className="space-y-2.5 text-2xl" data-testid={testid}>
+      <ul className="max-h-[45vh] space-y-2.5 overflow-y-auto pr-2 text-2xl" data-testid={testid}>
         {children}
       </ul>
     </div>
