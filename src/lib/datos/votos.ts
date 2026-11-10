@@ -1,5 +1,5 @@
 import "server-only";
-import { obtenerVotante, puedeCalificarPropuesta } from "@/config/votantes";
+import { obtenerTodosLosVotantes, obtenerVotante, puedeCalificarPropuesta } from "@/config/votantes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { falla, ok, type Resultado } from "./tipos";
 
@@ -27,9 +27,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function registrarCalificaciones(entrada: VotoEntrada): Promise<Resultado<number>> {
   const { votanteId, rondaId, propuestaId, puntajes } = entrada;
 
-  // 1) El votante existe en la configuración.
-  const votante = await obtenerVotante(String(votanteId ?? ""));
-  if (!votante) return falla("Votante no válido.");
+  // 1) El votante se valida en el paso 3, contra la lista de votantes de esa ronda.
 
   // 2) Forma de los datos y puntajes 1–5.
   if (!UUID.test(rondaId) || !UUID.test(propuestaId)) return falla("Datos de votación no válidos.");
@@ -47,10 +45,12 @@ export async function registrarCalificaciones(entrada: VotoEntrada): Promise<Res
   const db = createAdminClient();
 
   // 3) La ronda está abierta.
-  const { data: ronda, error: eRonda } = await db.from("rondas").select("estado").eq("id", rondaId).maybeSingle();
+  const { data: ronda, error: eRonda } = await db.from("rondas").select("estado, numero").eq("id", rondaId).maybeSingle();
   if (eRonda) return falla("No se pudo validar la ronda.");
   if (!ronda) return falla("La ronda no existe.");
   if (ronda.estado !== "abierta") return falla("La ronda no está abierta para votar.");
+  const votante = await obtenerVotante(String(votanteId ?? ""), ronda.numero);
+  if (!votante) return falla("Votante no válido.");
 
   // 4) La propuesta pertenece a la ronda y está activa.
   const { data: rp, error: eRp } = await db
@@ -100,7 +100,7 @@ export async function calificacionesDeVotante(
   votanteId: string,
   rondaId: string,
 ): Promise<Record<string, Record<string, number>>> {
-  if (!(await obtenerVotante(votanteId))) return {};
+  if (!(await obtenerTodosLosVotantes()).some((v) => v.id === votanteId)) return {};
   const { data, error } = await createAdminClient()
     .from("calificaciones")
     .select("propuesta_id, criterio_id, puntaje")
