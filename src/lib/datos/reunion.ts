@@ -1,5 +1,5 @@
 import "server-only";
-import { obtenerVotantes } from "@/config/votantes";
+import { etiquetaVotantes, obtenerVotantes } from "@/config/votantes";
 import { analizarCorte } from "@/lib/corte";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -69,6 +69,8 @@ export type EstadoGerente = "completo" | "en-proceso" | "pendiente";
 export type AvanceReunion = {
   ronda: { numero: number; nombre: string };
   totalVotantes: number;
+  /** "gerentes" o "personas", según quién vota en la ronda. */
+  etiqueta: string;
   completos: number;
   totalPropuestas: number;
   votantes: { id: string; nombre: string; estado: EstadoGerente }[];
@@ -87,13 +89,13 @@ export async function avanceVotacionReunion(): Promise<AvanceReunion | null> {
   const [propuestas, enviados, conAvance] = await Promise.all([
     propuestasParaVotar(ronda.id),
     db.from("votos_enviados").select("votante_id").eq("ronda_id", ronda.id),
-    db.from("calificaciones").select("votante_id").eq("ronda_id", ronda.id).limit(5000),
+    votantesConAvance(db, ronda.id),
   ]);
-  if (enviados.error || conAvance.error) throw new Error("No se pudo cargar el avance.");
+  if (enviados.error) throw new Error("No se pudo cargar el avance.");
   const enviaron = new Set(enviados.data.map((v) => v.votante_id));
-  const empezaron = new Set(conAvance.data.map((v) => v.votante_id));
+  const empezaron = conAvance;
 
-  const votantes = (await obtenerVotantes()).map((v) => ({
+  const votantes = (await obtenerVotantes(ronda.numero)).map((v) => ({
     id: v.id,
     nombre: v.nombre,
     estado: (enviaron.has(v.id) ? "completo" : empezaron.has(v.id) ? "en-proceso" : "pendiente") as EstadoGerente,
@@ -102,10 +104,31 @@ export async function avanceVotacionReunion(): Promise<AvanceReunion | null> {
   return {
     ronda: { numero: ronda.numero, nombre: ronda.nombre },
     totalVotantes: votantes.length,
+    etiqueta: etiquetaVotantes(ronda.numero),
     completos: enviaron.size,
     totalPropuestas: propuestas.length,
     votantes,
   };
+}
+
+/**
+ * Ids de votantes con avance en la ronda. Paginado: con todo el personal votando hay miles de
+ * calificaciones y la API devuelve máximo 1000 filas por consulta.
+ */
+async function votantesConAvance(db: ReturnType<typeof createAdminClient>, rondaId: string): Promise<Set<string>> {
+  const ids = new Set<string>();
+  for (let desde = 0; ; desde += 1000) {
+    const { data, error } = await db
+      .from("calificaciones")
+      .select("id, votante_id")
+      .eq("ronda_id", rondaId)
+      .order("id")
+      .range(desde, desde + 999);
+    if (error) throw new Error("No se pudo cargar el avance.");
+    for (const f of data) ids.add(f.votante_id);
+    if (data.length < 1000) break;
+  }
+  return ids;
 }
 
 // ---------------------------------------------------------------- resultados y ganadores (Fase 7)
