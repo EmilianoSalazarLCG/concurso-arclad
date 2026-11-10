@@ -39,6 +39,7 @@ type Pendiente = { p: string; c: string; v: number };
 
 const RENOVAR_IMAGENES_MS = 50 * 60 * 1000;
 const f3 = (n: number) => String(n).padStart(3, "0");
+const normalizarTexto = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 const fechaHora = new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Mexico_City" });
 
 // ------------------------------------------------------------------ almacenamiento local seguro
@@ -62,7 +63,16 @@ const CLAVE_VOTANTE = "votacion-votante";
 const clavePendientes = (v: string, r: string) => `votacion-pendientes-${v}-${r}`;
 const clavePosicion = (v: string, r: string) => `votacion-posicion-${v}-${r}`;
 
-export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; estadoInicial: EstadoVotacion }) {
+export function Votacion({
+  votantes,
+  estadoInicial,
+  etiqueta = "Votación de gerentes",
+}: {
+  votantes: Votante[];
+  estadoInicial: EstadoVotacion;
+  /** Antetítulo de la bienvenida ("Votación de gerentes" / "Votación del personal"). */
+  etiqueta?: string;
+}) {
   const [fase, setFase] = useState<Fase>("inicio");
   const [estado, setEstado] = useState<EstadoVotacion>(estadoInicial);
   const [votante, setVotante] = useState<Votante | null>(null);
@@ -77,6 +87,16 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
   const [indiceAbierto, setIndiceAbierto] = useState(false);
   const [logoGrande, setLogoGrande] = useState(false);
   const [verMas, setVerMas] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+  // Con muchas personas (Ronda 3) se busca por nombre; acepta palabras sueltas y sin acentos.
+  const votantesFiltrados = useMemo(() => {
+    const palabras = normalizarTexto(busqueda).split(/\s+/).filter(Boolean);
+    if (palabras.length === 0) return votantes;
+    return votantes.filter((v) => {
+      const n = normalizarTexto(v.nombre);
+      return palabras.every((p) => n.includes(p));
+    });
+  }, [votantes, busqueda]);
 
   const renovadoEn = useRef(0);
   // ------------------------------------------------------------------ guardado automático con reintentos
@@ -370,7 +390,7 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
           <div className="absolute -top-24 -right-24 -z-10 size-80 rounded-full bg-primary/20 blur-3xl" aria-hidden />
           <div className="mx-auto max-w-3xl aparecer">
             <Logotipo tamano="sm" />
-            <p className="mt-10 text-xs font-semibold tracking-[0.22em] text-oro uppercase">Votación de gerentes</p>
+            <p className="mt-10 text-xs font-semibold tracking-[0.22em] text-oro uppercase">{etiqueta}</p>
             <h1 className="mt-3 text-4xl leading-[1.05] font-semibold sm:text-6xl">
               Califica las <em className="font-medium text-primary">propuestas</em>
             </h1>
@@ -383,9 +403,26 @@ export function Votacion({ votantes, estadoInicial }: { votantes: Votante[]; est
           <div className="rounded-2xl border bg-card p-5 shadow-lg sm:p-7">
             <h2 className="text-2xl font-semibold">¿Quién eres?</h2>
             <p className="mt-1 text-sm text-muted-foreground">Elige tu nombre para empezar.</p>
+            {votantes.length > 12 && (
+              <input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Escribe tu nombre o apellido"
+                aria-label="Buscar tu nombre"
+                autoComplete="off"
+                className="mt-4 h-12 w-full rounded-lg border bg-background px-3.5 text-base transition-[border-color,box-shadow] outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-ring/40"
+                data-testid="buscar-votante"
+              />
+            )}
+            {votantesFiltrados.length === 0 && (
+              <p className="mt-5 text-sm text-muted-foreground" data-testid="sin-coincidencias">
+                No encontramos ese nombre. Revisa cómo lo escribiste o prueba solo con tu apellido.
+              </p>
+            )}
             <ul className="mt-5 grid gap-2.5 sm:grid-cols-2" data-testid="lista-votantes">
-              {votantes.map((v, i) => (
-                <li key={v.id} className="aparecer" style={{ "--i": i } as React.CSSProperties}>
+              {votantesFiltrados.map((v, i) => (
+                <li key={v.id} className="aparecer" style={{ "--i": Math.min(i, 12) } as React.CSSProperties}>
                   <button
                     onClick={() => elegir(v)}
                     className="group flex min-h-16 w-full items-center gap-3 rounded-xl border bg-background px-3.5 text-left text-base font-semibold transition-[border-color,background-color,box-shadow,transform] duration-200 hover:border-primary/50 hover:bg-accent/50 hover:shadow-sm focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none active:scale-[0.99]"
