@@ -85,11 +85,12 @@ const mapa = (filas: { propuesta_id: string; criterio_id: string; puntaje: numbe
 };
 
 export async function datosVotacion(votanteId: string): Promise<Resultado<DatosVotacion> & { estado?: EstadoVotacion }> {
-  const votante = await obtenerVotante(String(votanteId ?? ""));
-  if (!votante) return falla("Elige tu nombre de la lista.");
   const estado = await estadoVotacion();
   if (estado.tipo !== "abierta") return { ...falla("La votación no está abierta."), estado };
   const ronda = estado.ronda;
+  // Cada ronda tiene su lista de votantes (la Ronda 3 la vota todo el personal).
+  const votante = await obtenerVotante(String(votanteId ?? ""), ronda.numero);
+  if (!votante) return falla("Elige tu nombre de la lista.");
 
   const db = createAdminClient();
   const [propuestas, criterios, propias, enviadas, envio] = await Promise.all([
@@ -148,7 +149,8 @@ export async function guardarCalificacionPublica(
 
 /** Envía el voto: valida en el servidor que esté todo calificado y la base lo vuelve a validar. */
 export async function enviarVotoPublico(votanteId: string, rondaId: string): Promise<Resultado<{ enviadoAt: string }>> {
-  const votante = await obtenerVotante(String(votanteId ?? ""));
+  const abierta = await estadoVotacion();
+  const votante = await obtenerVotante(String(votanteId ?? ""), abierta.tipo === "abierta" ? abierta.ronda.numero : null);
   if (!votante) return falla("Votante no válido.");
   const datos = await datosVotacion(votante.id);
   if (!datos.ok) return datos;
