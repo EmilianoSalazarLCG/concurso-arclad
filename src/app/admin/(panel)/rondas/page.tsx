@@ -21,7 +21,9 @@ const VARIANTE = { pendiente: "outline", abierta: "solido", cerrada: "secondary"
 
 export default async function RondasPage() {
   await exigirAdmin();
-  const [rondas, total, link, { activas }] = await Promise.all([resumenRondas(), totalVotantes(), linkVotacion(), contarPropuestas()]);
+  const [rondas, link, { activas }] = await Promise.all([resumenRondas(), linkVotacion(), contarPropuestas()]);
+  // Cada ronda puede tener su propia lista de votantes (la Ronda 3 la vota todo el personal).
+  const totales = await Promise.all(rondas.map((r) => totalVotantes(r.numero)));
   const abierta = rondas.find((r) => r.estado === "abierta");
 
   return (
@@ -50,7 +52,7 @@ export default async function RondasPage() {
       <div className="grid gap-4">
         {rondas.map((r, i) => {
           const estado = r.estado as keyof typeof ETIQUETA;
-          const pct = Math.round((r.enviados / Math.max(1, total)) * 100);
+          const pct = Math.round((r.enviados / Math.max(1, totales[i])) * 100);
           return (
             <section
               key={r.id}
@@ -91,7 +93,7 @@ export default async function RondasPage() {
                       <div className="h-full rounded-full bg-primary transition-[width] duration-700" style={{ width: `${pct}%` }} />
                     </div>
                     <span className={cn("text-sm cifras", estado !== "pendiente" ? "font-semibold text-foreground" : "text-muted-foreground")} data-testid={`avance-ronda-${r.numero}`}>
-                      {r.enviados} de {total} enviaron
+                      {r.enviados} de {totales[i]} enviaron
                     </span>
                   </div>
                 </div>
