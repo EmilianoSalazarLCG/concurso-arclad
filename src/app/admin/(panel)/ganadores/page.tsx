@@ -52,7 +52,7 @@ export default async function GanadoresPage() {
   return (
     <div className="space-y-8">
       <EncabezadoPagina
-        antetitulo={`Ronda final · ${d.enviaron} de ${d.totalVotantes} gerentes enviaron`}
+        antetitulo={`Ronda final · ${d.enviaron} de ${d.totalVotantes} ${d.etiquetaVotantes} enviaron`}
         titulo={
           <>
             Los <em className="font-medium text-oro-foreground">ganadores</em>
