@@ -111,7 +111,14 @@ Aplicación web para gestionar un concurso interno de naming y logo para un proy
 - Conservar los `data-testid` y textos que usan las pruebas E2E al cambiar estilos.
 - Tarjeta de propuesta reutilizable: `src/components/propuestas/tarjeta-propuesta.tsx`.
 
-## Votantes (gerentes)
+## Votantes (gerentes y, en la Ronda 3, todo el personal)
+- Rondas 1 y 2: votan los 11 gerentes. Ronda 3: votan 157 personas = los 11 gerentes + 146 personas
+  del «Listado Participantes Concurso Logo.xlsx» (`src/config/personal-ronda-3.ts`; los 7 gerentes que
+  también vienen en el listado votan con su id de gerente).
+- Las listas por ronda viven en `VOTANTES_POR_RONDA` (`src/config/votantes.ts`). `obtenerVotantes(n)`,
+  `obtenerVotante(id, n)`, `totalVotantes(n)` y `etiquetaVotantes(n)` reciben el número de ronda; sin número
+  usan los gerentes. El votante se valida contra la lista de la ronda abierta. En /votar hay buscador
+  de nombre cuando la lista es larga.
 - Son 11 y por ahora van fijos en el código, en un solo archivo de configuración
   (`src/config/votantes.ts`), para poder cambiarlos fácilmente después.
 - No hay PIN: el gerente elige su nombre de una lista y vota. Si vuelve a votar,
