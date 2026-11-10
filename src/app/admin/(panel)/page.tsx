@@ -3,7 +3,7 @@ import { ArrowUpRightIcon, FileStackIcon, ListChecksIcon, PlusIcon, Presentation
 import { Embudo } from "@/components/admin/embudo";
 import { EncabezadoPagina, Metrica } from "@/components/admin/encabezado-pagina";
 import { buttonVariants } from "@/components/ui/button";
-import { totalVotantes } from "@/config/votantes";
+import { etiquetaVotantes, totalVotantes } from "@/config/votantes";
 import { exigirAdmin } from "@/lib/datos/auth";
 import { contarPropuestas } from "@/lib/datos/propuestas";
 import { resumenRondas } from "@/lib/datos/rondas";
@@ -22,7 +22,8 @@ export default async function PanelPage() {
   const siguiente = rondas.find((r) => r.estado === "pendiente");
   const ultimaCerrada = [...rondas].reverse().find((r) => r.estado === "cerrada");
   const referencia = abierta ?? ultimaCerrada;
-  const pct = referencia ? Math.round((referencia.enviados / Math.max(1, total)) * 100) : 0;
+  const totalRef = referencia ? await totalVotantes(referencia.numero) : total;
+  const pct = referencia ? Math.round((referencia.enviados / Math.max(1, totalRef)) * 100) : 0;
 
   const accesos = [
     { href: "/admin/propuestas/nueva", titulo: "Capturar propuesta", texto: "Pega el logo con ⌘V y completa los datos.", icono: PlusIcon },
@@ -81,11 +82,11 @@ export default async function PanelPage() {
           cifra={
             <>
               {referencia?.enviados ?? 0}
-              <span className="text-2xl text-muted-foreground"> / {total}</span>
+              <span className="text-2xl text-muted-foreground"> / {totalRef}</span>
             </>
           }
           icono={<UsersIcon />}
-          pie={referencia ? `gerentes enviaron · Ronda ${referencia.numero}` : "Aún no hay votación"}
+          pie={referencia ? `${etiquetaVotantes(referencia.numero)} enviaron · Ronda ${referencia.numero}` : "Aún no hay votación"}
         >
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
             <div className="h-full rounded-full bg-primary transition-[width] duration-700" style={{ width: `${pct}%` }} />
