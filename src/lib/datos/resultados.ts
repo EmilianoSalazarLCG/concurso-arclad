@@ -1,5 +1,5 @@
 import "server-only";
-import { obtenerVotantes } from "@/config/votantes";
+import { etiquetaVotantes, obtenerTodosLosVotantes, totalVotantes } from "@/config/votantes";
 import { createClient } from "@/lib/supabase/server";
 import { requerirAdmin } from "./auth";
 import { urlsFirmadasLogos } from "./logos";
@@ -36,6 +36,8 @@ export type RondaResultados = {
   filas: FilaResultado[];
   enviaron: number;
   totalVotantes: number;
+  /** "gerentes" o "personas", según quién vota en la ronda. */
+  etiquetaVotantes: string;
   avance: { realizado_at: string; por: string | null; propuestas: number } | null;
   ganadoresConfirmados: { confirmado_at: string; por: string | null } | null;
 };
@@ -109,7 +111,8 @@ export async function resultadosDeRonda(rondaId: string): Promise<RondaResultado
       })
       .sort((a, b) => a.posicion - b.posicion || a.folio - b.folio),
     enviaron: enviados.data!.length,
-    totalVotantes: (await obtenerVotantes()).length,
+    totalVotantes: await totalVotantes(ronda.numero),
+    etiquetaVotantes: etiquetaVotantes(ronda.numero),
     avance: avance.data
       ? { realizado_at: avance.data.realizado_at, por: nombreAdmin(avance.data.realizado_por), propuestas: avance.data.propuestas }
       : null,
@@ -158,7 +161,7 @@ export async function detalleRonda(rondaId: string): Promise<Map<string, Detalle
 }
 
 async function agruparPorGerente(filas: { votante_id: string; criterio_id: string; puntaje: number }[]): Promise<DetalleGerente[]> {
-  const votantes = await obtenerVotantes();
+  const votantes = await obtenerTodosLosVotantes();
   const nombre = new Map(votantes.map((v) => [v.id, v.nombre]));
   const por = new Map<string, Record<string, number>>();
   for (const f of filas) por.set(f.votante_id, { ...(por.get(f.votante_id) ?? {}), [f.criterio_id]: f.puntaje });
