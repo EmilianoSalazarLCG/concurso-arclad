@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CriteriosVotacion } from "@/components/admin/criterios-votacion";
 import { EncabezadoPagina } from "@/components/admin/encabezado-pagina";
 import { LimpiezaHuerfanos } from "@/components/admin/limpieza-huerfanos";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,11 @@ export const metadata = { title: "Mantenimiento · Concurso Identidad" };
 
 export default async function MantenimientoPage() {
   await exigirAdmin();
-  const [{ elegibles, recientes }, conexion] = await Promise.all([calcularHuerfanos(createAdminClient(), 24), verificarConexion()]);
+  const [{ elegibles, recientes }, conexion, criterios] = await Promise.all([
+    calcularHuerfanos(createAdminClient(), 24),
+    verificarConexion(),
+    createAdminClient().from("criterios").select("id, nombre, descripcion, activo").order("orden"),
+  ]);
   const bytes = elegibles.reduce((s, e) => s + e.tamano, 0);
 
   return (
@@ -43,6 +48,21 @@ export default async function MantenimientoPage() {
             </>
           )}
         </div>
+      </section>
+
+      <section className="max-w-2xl space-y-4 rounded-2xl border bg-card p-6 shadow-xs sm:p-7">
+        <div>
+          <h2 className="text-xl font-semibold">Criterios de votación</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Los criterios con los que se califica cada propuesta. Quitar uno no borra calificaciones: deja de pedirse en la
+            votación y de contar en los resultados.
+          </p>
+        </div>
+        {criterios.error ? (
+          <p className="text-sm text-destructive">No se pudieron cargar los criterios.</p>
+        ) : (
+          <CriteriosVotacion criterios={criterios.data} />
+        )}
       </section>
 
       <section className="max-w-2xl space-y-4 rounded-2xl border bg-card p-6 shadow-xs sm:p-7">
