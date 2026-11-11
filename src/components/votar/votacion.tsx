@@ -395,7 +395,7 @@ export function Votacion({
               Califica las <em className="font-medium text-primary">propuestas</em>
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Del 1 al 5 en cuatro criterios. No verás quién propuso cada nombre. Tu avance se guarda solo y puedes corregir hasta que cierre la votación.
+              Del 1 al 5 en cada criterio. No verás quién propuso cada nombre. Tu avance se guarda solo y puedes corregir hasta que cierre la votación.
             </p>
           </div>
         </section>
@@ -730,7 +730,7 @@ export function Votacion({
             <ChevronLeftIcon data-icon="inline-start" /> Anterior
           </Button>
           <span className="hidden flex-1 text-center text-sm text-muted-foreground sm:block">
-            {completa(actual?.id ?? "") ? "Propuesta completa" : "Califica los 4 criterios"} · usa ← → o desliza
+            {completa(actual?.id ?? "") ? "Propuesta completa" : `Califica los ${criterios.length} criterios`} · usa ← → o desliza
           </span>
           {indice < propuestas.length - 1 ? (
             <Button className="h-12 flex-1 sm:flex-none" onClick={() => irA(indice + 1)} data-testid="siguiente">
